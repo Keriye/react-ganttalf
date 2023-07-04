@@ -1,3 +1,3 @@
-import GanttCart from './components/GanttCart'
+import GanttChart from './components/GanttChart'
 
-export { GanttCart }
+export { GanttChart }

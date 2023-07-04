@@ -1,0 +1,204 @@
+yarn add v1.22.19
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+warning Pattern ["@babel/preset-env@^7.22.5"] is trying to unpack in the same destination "C:\\Users\\Georg\\AppData\\Local\\Yarn\\Cache\\v6\\npm-@babel-preset-env-7.22.5-3da66078b181f3d62512c51cf7014392c511504e-integrity\\node_modules\\@babel\\preset-env" as pattern ["@babel/preset-env@^7.12.11","@babel/preset-env@^7.20.2"]. This could result in non-deterministic behavior, skipping.
+warning Pattern ["@babel/preset-typescript@^7.22.5"] is trying to unpack in the same destination "C:\\Users\\Georg\\AppData\\Local\\Yarn\\Cache\\v6\\npm-@babel-preset-typescript-7.22.5-16367d8b01d640e9a507577ed4ee54e0101e51c8-integrity\\node_modules\\@babel\\preset-typescript" as pattern ["@babel/preset-typescript@^7.12.7","@babel/preset-typescript@^7.13.0"]. This could result in non-deterministic behavior, skipping.
+warning Pattern ["@babel/preset-react@^7.22.5"] is trying to unpack in the same destination "C:\\Users\\Georg\\AppData\\Local\\Yarn\\Cache\\v6\\npm-@babel-preset-react-7.22.5-c4d6058fbf80bccad02dd8c313a9aaa67e3c3dd6-integrity\\node_modules\\@babel\\preset-react" as pattern ["@babel/preset-react@^7.12.10","@babel/preset-react@^7.12.10","@babel/preset-react@^7.18.6"]. This could result in non-deterministic behavior, skipping.
+[3/4] Linking dependencies...
+warning " > styled-components@5.3.11" has unmet peer dependency "react-is@>= 16.8.0".
+warning " > babel-loader@9.1.2" has unmet peer dependency "webpack@>=5".
+[4/4] Building fresh packages...
+success Saved lockfile.
+success Saved 129 new dependencies.
+info Direct dependencies
+├─ @babel/preset-env@7.22.5
+├─ @babel/preset-react@7.22.5
+├─ @babel/preset-typescript@7.22.5
+├─ @storybook/react-webpack5@7.0.22
+├─ eslint-plugin-storybook@0.6.12
+└─ storybook@7.0.22
+info All dependencies
+├─ @aw-web-design/x-default-browser@1.4.88
+├─ @babel/plugin-syntax-flow@7.22.5
+├─ @babel/plugin-transform-flow-strip-types@7.22.5
+├─ @babel/preset-env@7.22.5
+├─ @babel/preset-flow@7.22.5
+├─ @babel/preset-react@7.22.5
+├─ @babel/preset-typescript@7.22.5
+├─ @colors/colors@1.5.0
+├─ @discoveryjs/json-ext@0.5.7
+├─ @fal-works/esbuild-plugin-global-externals@2.1.2
+├─ @ndelangen/get-tarball@3.0.9
+├─ @pmmmwh/react-refresh-webpack-plugin@0.5.10
+├─ @storybook/builder-manager@7.0.22
+├─ @storybook/cli@7.0.22
+├─ @storybook/codemod@7.0.22
+├─ @storybook/core-server@7.0.22
+├─ @storybook/docs-mdx@0.1.0
+├─ @storybook/preset-react-webpack@7.0.22
+├─ @storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0
+├─ @storybook/react-webpack5@7.0.22
+├─ @types/detect-port@1.3.3
+├─ @types/ejs@3.1.2
+├─ @types/find-cache-dir@3.2.1
+├─ @types/mime-types@2.1.1
+├─ @yarnpkg/esbuild-plugin-pnp@3.0.0-rc.15
+├─ address@1.2.2
+├─ aggregate-error@3.1.0
+├─ async-limiter@1.0.1
+├─ async@3.2.4
+├─ babel-core@7.0.0-bridge.0
+├─ babel-plugin-add-react-displayname@0.0.5
+├─ babel-plugin-react-docgen@4.2.1
+├─ better-opn@2.1.1
+├─ big-integer@1.6.51
+├─ bl@4.1.0
+├─ bplist-parser@0.2.0
+├─ browserify-zlib@0.1.4
+├─ buffer-crc32@0.2.13
+├─ c8@7.14.0
+├─ clean-stack@2.2.0
+├─ cli-cursor@3.1.0
+├─ cli-spinners@2.9.0
+├─ cli-table3@0.6.3
+├─ clone@1.0.4
+├─ common-path-prefix@3.0.0
+├─ compressible@2.0.18
+├─ compression@1.7.4
+├─ core-js-pure@3.31.0
+├─ crypto-random-string@2.0.0
+├─ default-browser-id@3.0.0
+├─ defaults@1.0.4
+├─ define-lazy-prop@2.0.0
+├─ defu@6.1.2
+├─ del@6.1.1
+├─ detect-indent@6.1.0
+├─ detect-package-manager@2.0.1
+├─ detect-port@1.5.1
+├─ ejs@3.1.9
+├─ endent@2.1.0
+├─ envinfo@7.8.1
+├─ error-stack-parser@2.1.4
+├─ esbuild-plugin-alias@0.2.1
+├─ eslint-plugin-storybook@0.6.12
+├─ estree-to-babel@3.2.1
+├─ extract-zip@1.7.0
+├─ fast-json-parse@1.0.3
+├─ fd-slicer@1.1.0
+├─ fetch-retry@5.0.6
+├─ filelist@1.0.4
+├─ flow-parser@0.209.0
+├─ foreground-child@2.0.0
+├─ fs-constants@1.0.0
+├─ fs-minipass@2.1.0
+├─ get-npm-tarball-url@2.0.3
+├─ get-port@5.1.1
+├─ giget@1.1.2
+├─ gunzip-maybe@1.4.2
+├─ indent-string@4.0.0
+├─ ip@2.0.0
+├─ is-deflate@1.0.0
+├─ is-gzip@1.0.0
+├─ is-interactive@1.0.0
+├─ is-path-cwd@2.2.0
+├─ is-wsl@2.2.0
+├─ isomorphic-unfetch@3.1.0
+├─ jake@10.8.7
+├─ log-symbols@4.1.0
+├─ min-indent@1.0.1
+├─ minizlib@2.1.2
+├─ mkdirp-classic@0.5.3
+├─ mri@1.2.0
+├─ node-dir@0.1.17
+├─ node-fetch-native@1.2.0
+├─ objectorarray@1.0.5
+├─ on-headers@1.0.2
+├─ open@8.4.2
+├─ ora@5.4.1
+├─ p-map@4.0.0
+├─ pako@0.2.9
+├─ pathe@1.1.1
+├─ peek-stream@1.1.3
+├─ pend@1.2.0
+├─ progress@2.0.3
+├─ proxy-from-env@1.1.0
+├─ puppeteer-core@2.1.1
+├─ react-docgen-typescript@2.2.2
+├─ react-docgen@5.4.3
+├─ react-refresh@0.11.0
+├─ rechoir@0.6.2
+├─ requireindex@1.2.0
+├─ restore-cursor@3.1.0
+├─ serve-favicon@2.5.0
+├─ shelljs@0.8.5
+├─ simple-update-notifier@1.1.0
+├─ stackframe@1.3.4
+├─ storybook@7.0.22
+├─ strip-indent@3.0.0
+├─ tar-fs@2.1.1
+├─ tar-stream@2.2.0
+├─ tar@6.1.15
+├─ temp-dir@2.0.0
+├─ temp@0.8.4
+├─ tempy@1.0.1
+├─ unique-string@2.0.0
+├─ untildify@4.0.0
+├─ wcwidth@1.0.1
+├─ write-file-atomic@2.4.3
+├─ yargs-parser@20.2.9
+└─ yauzl@2.10.0
+$ npm run build
+
+> react-ganttalf@0.1.0 build
+> yarn build:esm && yarn build:cjs
+
+yarn run v1.22.19
+$ tsc
+src/components/Chart/Chart.tsx(1,26): error TS6133: 'NonWorkingSegment' is declared but its value is never read.
+src/components/Chart/Chart.tsx(1,51): error TS7016: Could not find a declaration file for module './Chart.styled'. 'C:/Development/react-ganttalf/src/components/Chart/Chart.styled.js' implicitly has an 'any' type.
+src/components/Chart/Chart.tsx(2,36): error TS6133: 'IThemeProps' is declared but its value is never read.
+src/components/Chart/Chart.tsx(6,24): error TS7016: Could not find a declaration file for module '../Connectors/Connectors'. 'C:/Development/react-ganttalf/src/components/Connectors/Connectors.js' implicitly has an 'any' type.
+src/components/Chart/Chart.tsx(7,32): error TS7016: Could not find a declaration file for module './NonWorkingSegments'. 'C:/Development/react-ganttalf/src/components/Chart/NonWorkingSegments.js' implicitly has an 'any' type.
+src/components/Chart/Chart.tsx(9,17): error TS7016: Could not find a declaration file for module './Row'. 'C:/Development/react-ganttalf/src/components/Chart/Row.js' implicitly has an 'any' type.
+src/components/Chart/Chart.tsx(28,39): error TS2322: Type 'string | Date' is not assignable to type 'Date'.
+  Type 'string' is not assignable to type 'Date'.
+src/components/Chart/Chart.tsx(28,50): error TS2322: Type 'string | Date' is not assignable to type 'Date'.
+  Type 'string' is not assignable to type 'Date'.
+src/components/Chart/Chart.tsx(30,15): error TS2345: Argument of type 'Date[]' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type 'Date[]' provides no match for the signature '(prevState: null): null'.
+src/components/Chart/Chart.tsx(34,30): error TS7006: Parameter 'givenTask' implicitly has an 'any' type.
+src/components/Chart/Chart.tsx(69,27): error TS2339: Property 'length' does not exist on type 'never'.
+src/components/Chart/Chart.tsx(69,36): error TS18048: 'columnWidth' is possibly 'undefined'.
+src/components/Chart/Chart.tsx(71,41): error TS2339: Property 'clientHeight' does not exist on type 'never'.
+src/components/Chart/Chart.tsx(79,7): error TS2322: Type 'string | Date | undefined' is not assignable to type 'Date'.
+  Type 'undefined' is not assignable to type 'Date'.
+src/components/Chart/Chart.tsx(82,7): error TS18048: 'columnWidth' is possibly 'undefined'.
+src/components/Chart/Chart.tsx(83,5): error TS18048: 'columnWidth' is possibly 'undefined'.
+src/components/Chart/Chart.tsx(97,43): error TS18048: 'rowHeight' is possibly 'undefined'.
+src/components/GanttCart.tsx(2,25): error TS6133: 'useContext' is declared but its value is never read.
+src/components/GanttCart.tsx(8,18): error TS7016: Could not find a declaration file for module './Grid/Grid'. 'C:/Development/react-ganttalf/src/components/Grid/Grid.js' implicitly has an 'any' type.
+src/components/GanttCart.tsx(11,28): error TS7016: Could not find a declaration file for module './TimeLineHeader/TimeLineHeader'. 'C:/Development/react-ganttalf/src/components/TimeLineHeader/TimeLineHeader.js' implicitly has an 'any' type.
+src/components/GanttCart.tsx(90,5): error TS2304: Cannot find name 'setStateTasks'.
+src/components/GanttCart.tsx(90,20): error TS7006: Parameter 'prevState' implicitly has an 'any' type.
+src/components/GanttCart.tsx(91,29): error TS7006: Parameter 'stateTask' implicitly has an 'any' type.
+src/components/GanttCart.tsx(107,5): error TS2304: Cannot find name 'setStateTasks'.
+src/components/GanttCart.tsx(107,20): error TS7006: Parameter 'prevState' implicitly has an 'any' type.
+src/components/GanttCart.tsx(116,29): error TS7006: Parameter 'stateTask' implicitly has an 'any' type.
+src/components/GanttCart.tsx(132,5): error TS2304: Cannot find name 'setStateTasks'.
+src/components/GanttCart.tsx(132,20): error TS7006: Parameter 'prevState' implicitly has an 'any' type.
+src/components/GanttCart.tsx(133,29): error TS7006: Parameter 'stateTask' implicitly has an 'any' type.
+src/components/GanttCart.tsx(157,24): error TS2322: Type '(task: ITaskProps, newDates: { startDate: Date; endDate: Date; }) => void' is not assignable to type '() => void'.
+  Target signature provides too few arguments. Expected 2 or more, but got 0.
+src/context/TasksContext.tsx(31,49): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+src/context/TasksContext.tsx(32,52): error TS2339: Property 'endDate' does not exist on type 'ITaskProps'.
+src/utils/helpers.ts(57,63): error TS18047: 'start' is possibly 'null'.
+error Command failed with exit code 2.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 2.
+info Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.
