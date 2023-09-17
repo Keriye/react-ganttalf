@@ -1,20 +1,17 @@
 import styled from 'styled-components'
 
-export const TimeLineHeaderContainer = styled.div`
-  min-height: 50px;
+export const Wrapper = styled.div<{ width: number }>`
+  height: 50px;
+  width: ${(props) => props.width}px;
   display: flex;
+  flex: 0 0 auto;
   flex-direction: row;
-  position: relative;
-  overflow: auto;
-  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 120;
   pointer-events: none;
   border-bottom: 1px solid #edebe9;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  background-color: white;
 `
 
 export const DateMarking = styled.div<{
@@ -23,7 +20,6 @@ export const DateMarking = styled.div<{
 }>`
   bottom: 3px;
   font-size: 11px;
-  width: 100%;
   left: ${({ columnWidth, index }) => index * columnWidth}px;
   position: absolute;
   text-align: left;

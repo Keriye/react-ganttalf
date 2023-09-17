@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
@@ -14,12 +14,29 @@ function hexToRgb(hex: string) {
   return { r: 0, g: 0, b: 0 }
 }
 
-export const GridContainer = styled.div`
+export const Wrapper = styled.div<{ isResizing?: boolean; totalHeight?: number }>`
   border-right: ${(props) => '1px solid ' + props.theme.neutralLight};
   position: sticky;
   left: 0;
-  width: 360px;
+  width: min-content;
+  height: ${({ totalHeight }) => (totalHeight ? `${totalHeight}px` : 'unset')};
+  min-width: 350px;
+  max-width: 90%;
   z-index: 110;
+  ${({ isResizing }) =>
+    !!isResizing &&
+    css`
+      user-select: none;
+    `};
+`
+
+export const ResizeLine = styled.div`
+  width: 10px;
+  cursor: col-resize;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
 `
 
 export const TitleCellStyled = styled.div<{
@@ -32,6 +49,7 @@ export const TitleCellStyled = styled.div<{
   margin-left: 8px;
   margin-right: 8px;
   height: 100%;
+  min-width: 100px;
   position: relative;
   display: flex;
   align-items: center;
@@ -254,7 +272,7 @@ export const GridRowStyled = styled.div<{
     }
   }
 
-  .c-grid-add-new-task-top {
+  .c-grid-add-new-task-before {
     top: -3px;
 
     &:hover {
@@ -262,7 +280,7 @@ export const GridRowStyled = styled.div<{
     }
   }
 
-  .c-grid-add-new-task-bottom {
+  .c-grid-add-new-task-after {
     bottom: -3px;
 
     &:hover {
@@ -281,6 +299,7 @@ export const GridRowStyled = styled.div<{
     justify-content: center;
     height: 100%;
     width: 70px;
+    flex: 0 0 auto;
 
     &:hover {
       .c-grid-gripper-wrapper {
@@ -320,4 +339,9 @@ export const GridRowStyled = styled.div<{
   .c-grid-avatar-wrapper {
     padding-right: 16px;
   }
+`
+
+export const CustomGridCell = styled.div<{ width: number }>`
+  display: flex;
+  flex: 0 0 ${(p) => p.width ?? 0}px;
 `

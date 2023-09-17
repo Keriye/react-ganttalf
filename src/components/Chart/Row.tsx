@@ -1,12 +1,13 @@
 import { MileStone, RowStyled, Task } from './Chart.styled'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 
 import { ITask } from '../../types'
 import NewLinkConnector from '../Connectors/NewLinkConnector'
 import ReactDOM from 'react-dom'
 import TimeLineDateRange from '../TimeLineHeader/TimeLineDateRange'
+import { ActionContext } from '../GanttChart'
 
 interface IRowProps {
   task: ITask
@@ -15,6 +16,8 @@ interface IRowProps {
 function Row({ task }: IRowProps) {
   const config = useConfigStore((state) => state.config)
   const onTaskDateChange = useTasksStore((state) => state.onTaskDateChange)
+
+  const { onTaskSelect } = useContext(ActionContext)
 
   const { rowHeight, columnWidth, startDate } = config
 
@@ -58,6 +61,8 @@ function Row({ task }: IRowProps) {
 
   function onTaskClick() {
     if (dragging.current) return
+
+    onTaskSelect(task)
   }
 
   function onDragTaskRange(event: React.MouseEvent, endpoint: 'start' | 'end') {
@@ -350,6 +355,7 @@ function Row({ task }: IRowProps) {
       ref={rowRef}
       type={task.type || 1}
       rowHeight={rowHeight}
+      segmentWidth={columnWidth * 7}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
       style={{ height: rowHeight }}

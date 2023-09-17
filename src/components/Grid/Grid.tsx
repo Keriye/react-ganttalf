@@ -1,11 +1,18 @@
-import { GridContainer } from './Grid.styled'
+import * as SC from './Grid.styled'
 import GridRow from './GridRow'
 import { ITask } from '../../types'
 import { findParentTask } from '../../utils/helpers'
 import { useTasksStore } from '../../Store'
+import useHorizontalResize from '../../hooks/useHorizontalResize'
+import { VirtualItem } from '@tanstack/react-virtual'
+import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 function Grid() {
+  const { containerRef, isResizing, handleResizeStart } = useHorizontalResize()
+
   const tasks = useTasksStore((state) => state.tasks)
+  const totalHeight = useVirtualizationStore((state) => state.totalHeight)
+  const virtualItems = useVirtualizationStore((state) => state.virtualItems)
 
   function getTaskLevel(givenTask: ITask) {
     let taskLevel = 0
@@ -30,7 +37,7 @@ function Grid() {
     return false
   }
 
-  function renderRow(task: ITask, index: number) {
+  const renderRow = (task: ITask, index: number) => {
     const collapsed = getCollapsedState(task)
 
     if (collapsed) return null
@@ -48,7 +55,27 @@ function Grid() {
     )
   }
 
-  return <GridContainer>{tasks.map(renderRow)}</GridContainer>
+  const renderVirtualRow = ({ index }: VirtualItem) => {
+    const task = tasks[index]
+
+    if (!task) return null
+
+    return renderRow(task, index)
+  }
+
+  return (
+    <SC.Wrapper ref={containerRef} isResizing={isResizing} totalHeight={totalHeight}>
+      {virtualItems ? (
+        <>
+          <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />
+          {virtualItems.map(renderVirtualRow)}
+        </>
+      ) : (
+        tasks.map(renderRow)
+      )}
+      <SC.ResizeLine onMouseDown={handleResizeStart} />
+    </SC.Wrapper>
+  )
 }
 
 export default Grid

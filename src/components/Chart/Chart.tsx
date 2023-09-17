@@ -1,30 +1,29 @@
 import { findParentTask, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { ChartContainer } from './Chart.styled'
+import * as SC from './Chart.styled'
 import Connectors from '../Connectors/Connectors'
-// import { DateTime } from 'luxon'
 import { ITask } from '../../types'
-import NonWorkingSegments from './NonWorkingSegments'
-import ReactDOM from 'react-dom'
 import Row from './Row'
+import TimeLineHeader from '../TimeLineHeader/TimeLineHeader'
+import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 function Chart() {
   const tasks = useTasksStore((state) => state.tasks)
+  const virtualItems = useVirtualizationStore((state) => state.virtualItems)
   const config = useConfigStore((state) => state.config)
-  const [days, setDays] = useState<Date[] | null>(null)
 
   const chartRef = useRef(null)
 
-  const { startDate, endDate, rowHeight, columnWidth } = config
+  const { startDate, endDate, columnWidth } = config
 
-  useEffect(() => {
+  const days = useMemo(() => {
     if (startDate && endDate) {
-      const _days = getDatesBetween({ startDate, endDate })
-
-      setDays(_days)
+      return getDatesBetween({ startDate, endDate })
     }
+
+    return null
   }, [startDate, endDate])
 
   function getCollapsedState(givenTask: ITask) {
@@ -38,32 +37,33 @@ function Chart() {
     return false
   }
 
-  function renderTodayDot() {
-    const timeLineHeaderContainer = document.getElementById('time-line-header-container')
-
-    if (!timeLineHeaderContainer) return null
-
-    return ReactDOM.createPortal(
-      <div
-        style={{
-          position: 'absolute',
-          height: 6,
-          width: 6,
-          bottom: 0,
-          left: todayIndicatorPosition - 2,
-          backgroundColor: '#f00',
-          borderRadius: '50%',
-        }}
-      />,
-      timeLineHeaderContainer,
-    )
-  }
+  // TODO:  add dot
+  // function renderTodayDot() {
+  //   const timeLineHeaderContainer = document.getElementById('time-line-header-container')
+  //
+  //   if (!timeLineHeaderContainer) return null
+  //
+  //   return ReactDOM.createPortal(
+  //     <div
+  //       style={{
+  //         position: 'absolute',
+  //         height: 6,
+  //         width: 6,
+  //         bottom: 0,
+  //         left: todayIndicatorPosition - 2,
+  //         backgroundColor: '#f00',
+  //         borderRadius: '50%',
+  //       }}
+  //     />,
+  //     timeLineHeaderContainer,
+  //   )
+  // }
 
   if (!days) return
 
   const chartWidth = days.length * columnWidth
 
-  const tasksToDisplay = tasks.filter((task) => {
+  const tasksToDisplay = (virtualItems ? virtualItems.map(({ index }) => tasks[index]) : tasks).filter((task) => {
     return !getCollapsedState(task)
   })
 
@@ -76,28 +76,19 @@ function Chart() {
     columnWidth
 
   return (
-    <ChartContainer ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
-      <NonWorkingSegments days={days} />
-      <div
-        style={{
-          position: 'absolute',
-          width: 1,
-          top: 0,
-          zIndex: 100,
-          pointerEvents: 'none',
-          backgroundColor: '#f00',
-          left: todayIndicatorPosition,
-          height: tasksToDisplay.length * rowHeight,
-        }}
-      />
-      <div id='react-ganttalf-tasks-container' style={{ position: 'relative' }}>
-        <Connectors />
-        {tasksToDisplay.map((task) => {
-          return <Row key={task.id} task={task} />
-        })}
-      </div>
-      {renderTodayDot()}
-    </ChartContainer>
+    <>
+      <TimeLineHeader days={days} />
+      <SC.ChartWrapper ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
+        <SC.TodayIndicator indicatorPosition={todayIndicatorPosition} />
+        <SC.ChartContainer id='react-ganttalf-tasks-container'>
+          <Connectors />
+          {virtualItems && <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
+          {tasksToDisplay.map((task) => {
+            return <Row key={task.id} task={task} />
+          })}
+        </SC.ChartContainer>
+      </SC.ChartWrapper>
+    </>
   )
 }
 

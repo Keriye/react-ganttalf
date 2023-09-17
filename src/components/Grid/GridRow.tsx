@@ -1,12 +1,13 @@
 import { useConfigStore, useTasksStore } from '../../Store'
-import { useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 import Avatar from './Avatar'
 import Checkbox from './Checkbox'
-import { GridRowStyled } from './Grid.styled'
-import { ITask } from '../../types'
+import * as SC from './Grid.styled'
+import { ITask, TaskStatus } from '../../types'
 import Icon from './SvgIcon'
 import TitleCell from './TitleCell'
+import { ActionContext } from '../GanttChart'
 
 interface IGridRowProps {
   isFirstItem: boolean
@@ -15,10 +16,19 @@ interface IGridRowProps {
   taskLevel: number
 }
 
+const renderSortOrderColumnDefault = (task: ITask) => task.sortOrder
+
+const renderAssigneeColumnDefault = (task: ITask) => (
+  <Avatar className='c-grid-avatar' name={task.assignedTo?.name} imgSrc={task.assignedTo?.pictureUrl} />
+)
+
 export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IGridRowProps) {
+  const addTask = useTasksStore((state) => state.addTask)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
+
+  const { columnsRenderer, columnsOrder } = useContext(ActionContext)
 
   const { rowHeight } = config
 
@@ -26,6 +36,12 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   const openSubTasksRef = useRef<NodeJS.Timeout | null>(null)
 
   const [dragOverPosition, setDragOverPosition] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (task.id.startsWith('temp')) {
+      rowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    }
+  }, [task.id])
 
   function onDragStart(event: React.DragEvent<HTMLDivElement>) {
     const element = document.getElementById('c-grid-row-' + task.id)
@@ -126,18 +142,57 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     openSubTasksRef.current = null
   }
 
-  function renderAddTaskButton(position: string) {
-    if (isLastItem && position === 'bottom') return null
+  const getAddTaskHandler =
+    (position: 'before' | 'after'): React.MouseEventHandler<HTMLDivElement> =>
+    (event) => {
+      event.stopPropagation()
+
+      addTask({}, { sourceId: task.id, position })
+    }
+
+  function renderAddTaskButton(position: 'before' | 'after') {
+    if (isLastItem && position === 'after') return null
 
     return (
-      <div className={`c-grid-add-new-task c-grid-add-new-task-${position}`}>
+      <div className={`c-grid-add-new-task c-grid-add-new-task-${position}`} onClick={getAddTaskHandler(position)}>
         <Icon className='c-grid-add-task-icon' width={10} height={10} iconName='Add' />
       </div>
     )
   }
 
+  const renderSortOrderColumn = () => (
+    <div className='c-grid-sort-order'>
+      {(columnsRenderer?.sortOrder?.renderer ?? renderSortOrderColumnDefault)(task)}
+    </div>
+  )
+  const renderAssigneeColumn = () => (
+    <div className='c-grid-avatar-wrapper'>
+      {(columnsRenderer?.assignee?.renderer ?? renderAssigneeColumnDefault)(task)}
+    </div>
+  )
+
+  const renderCustomColumns = () => {
+    if (!columnsOrder) {
+      return null
+    }
+
+    return columnsOrder.map((columnName) => {
+      const customRenderer = columnsRenderer?.[columnName]?.renderer
+
+      if (!customRenderer) {
+        return null
+      }
+
+      return (
+        <SC.CustomGridCell key={columnName} className={`c-grid-${columnName}-wrapper`} width={200}>
+          {customRenderer(task)}
+        </SC.CustomGridCell>
+      )
+    })
+  }
+
   return (
-    <GridRowStyled
+    <SC.GridRowStyled
       className='c-grid-row-wrapper'
       ref={rowRef}
       onDragOver={onDragOver}
@@ -151,23 +206,25 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     >
       <div className={getContainerClassName()}>
         <div className='c-grid-gripper-sort-order-container'>
-          {renderAddTaskButton('top')}
-          {renderAddTaskButton('bottom')}
+          {renderAddTaskButton('before')}
+          {renderAddTaskButton('after')}
 
           <div draggable onDragStart={onDragStart} className='c-grid-gripper-wrapper'>
             <Icon width={18} height={18} iconName='GripperDotsVertical' />
           </div>
-          <div className='c-grid-sort-order'>{task.sortOrder}</div>
+          {renderSortOrderColumn()}
         </div>
-        <Checkbox onChange={(checked) => onStatusChange(checked, task.id)} defaultChecked={task.status === 1} />
+        <Checkbox
+          onChange={(checked) => onStatusChange(checked, task.id)}
+          defaultChecked={task.status === TaskStatus.Completed}
+        />
         <TitleCell taskLevel={taskLevel} task={task} />
-        <div className='c-grid-avatar-wrapper'>
-          <Avatar className='c-grid-avatar' name={task.assignedTo?.name} imgSrc={task.assignedTo?.pictureUrl} />
-        </div>
+        {renderCustomColumns()}
+        {renderAssigneeColumn()}
       </div>
       <div className={getDragOverRightClassName()}>
         <Icon className='c-grid-drag-over-icon' width={18} height={18} iconName='PaddingRight' />
       </div>
-    </GridRowStyled>
+    </SC.GridRowStyled>
   )
 }

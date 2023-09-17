@@ -4,6 +4,6 @@ export enum TaskType {
 }
 
 export enum TaskStatus {
-  open = 0,
-  completed = 1,
+  Open = 0,
+  Completed = 1,
 }

@@ -1,6 +1,8 @@
 import { DateTime, DurationLikeObject, Interval } from 'luxon'
 
 import { ITask } from '../types'
+import useTranslateStore from '../Store/TranslateStore'
+import { useTasksStore } from '../Store'
 
 export function findParentTask(givenTask: ITask, tasks: ITask[]): ITask | undefined {
   return tasks.find((task) => {
@@ -72,3 +74,16 @@ export function addDateTime(date: Date, { days = 0, hours = 0, minutes = 0 }: Du
 export function areDatesEqual(date1: Date, date2: Date): boolean {
   return DateTime.fromJSDate(date1).toISODate() === DateTime.fromJSDate(date2).toISODate()
 }
+
+export const getTemplatedTask = (task: Partial<ITask>): ITask => ({
+  id: `temp-${new Date().getTime()}`,
+  sortOrder: useTasksStore.getState().tasks.length + 1,
+  predecessors: [],
+  successors: [],
+  status: 0,
+  type: 1,
+  subTaskIds: [],
+  collapsed: false,
+  ...task,
+  title: task.title || useTranslateStore.getState().t('default.task.title'),
+})

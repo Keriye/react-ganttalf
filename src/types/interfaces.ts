@@ -19,6 +19,7 @@ export interface ITask {
   endDate?: Date | string
   status: TaskStatus
   subTaskIds?: string[]
+  predecessors?: string[]
   successors?: string[]
   title?: string
   type?: TaskType
