@@ -31,11 +31,8 @@ const NewTask: FC<NewTaskProps> = ({ handleEditModeSwitch }) => {
 
   const handleTaskCreate = useCallback(() => {
     if (title) {
-      if (onTaskCreate) {
-        onTaskCreate({ title })
-      } else {
-        addTask({ title })
-      }
+      addTask({ title })
+      onTaskCreate?.({ title })
     }
     handleEditModeSwitch()
   }, [addTask, handleEditModeSwitch, onTaskCreate, title])

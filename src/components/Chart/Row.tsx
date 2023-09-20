@@ -62,7 +62,7 @@ function Row({ task }: IRowProps) {
   function onTaskClick() {
     if (dragging.current) return
 
-    onTaskSelect(task)
+    onTaskSelect?.(task)
   }
 
   function onDragTaskRange(event: React.MouseEvent, endpoint: 'start' | 'end') {

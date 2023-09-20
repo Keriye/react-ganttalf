@@ -2,10 +2,11 @@ import { ITask, TaskStatus } from '../../types'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
-import { useCallback, useContext, useState } from 'react'
-import { useTasksStore } from '../../Store'
+import React, { useCallback, useContext, useState } from 'react'
+import { useConfigStore, useTasksStore } from '../../Store'
 import { ActionContext } from '../GanttChart'
 import useTranslateStore from '../../Store/TranslateStore'
+import { getDatesBetween } from '../../utils/helpers'
 // import useDomStore from '../../Store/DomStore'
 
 interface ITitleCellProps {
@@ -17,12 +18,15 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const [title, setTitle] = useState(task.title)
   const t = useTranslateStore((store) => store.t)
 
-  const { onTaskSelect } = useContext(ActionContext)
+  const { onTaskSelect, onTaskTitleChange } = useContext(ActionContext)
 
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const deleteTask = useTasksStore((state) => state.deleteTask)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const onSubtaskCreate = useTasksStore((state) => state.onSubtaskCreate)
+  const config = useConfigStore((state) => state.config)
+
+  const { startDate, columnWidth } = config
 
   // const wrapperNode = useDomStore((store) => store.wrapperNode)
   // const gridNode = useDomStore((store) => store.gridNode)
@@ -46,7 +50,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   }
 
   const handleTaskSelect = useCallback(() => {
-    onTaskSelect(task)
+    onTaskSelect?.(task)
   }, [onTaskSelect, task])
 
   const handleTaskDelete = useCallback(() => {
@@ -62,10 +66,24 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   }, [onSubtaskCreate, task.id])
 
   const handleScrollToTask = useCallback(() => {
-    const taskTimeline = document.querySelector(`#task-bar-${task.id}`)
+    if (!task.startDate) return
 
-    taskTimeline?.scrollIntoView({ block: 'nearest', inline: 'start' })
-  }, [task.id])
+    const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
+    // const ganttChart = document.querySelector(`div[class^=Chart-module_chart]`);
+    const ganttChart = document.querySelector('#react-ganttalf')
+    const scrollLeft = diff * columnWidth + 350
+
+    ganttChart?.scrollTo(scrollLeft, ganttChart.scrollTop)
+  }, [columnWidth, startDate, task.startDate])
+
+  const handleEnterPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (event) => {
+      if (event.key === 'Enter' && event.currentTarget?.value) {
+        onTaskTitleChange?.({ value: event.currentTarget.value, taskId: task.id })
+      }
+    },
+    [onTaskTitleChange, task.id],
+  )
 
   return (
     <TitleCellStyled
@@ -80,6 +98,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
         onChange={(event) => {
           setTitle(event.target.value)
         }}
+        onKeyUp={handleEnterPress}
         value={title}
         type='text'
       />

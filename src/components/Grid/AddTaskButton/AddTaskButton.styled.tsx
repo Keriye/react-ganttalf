@@ -7,7 +7,7 @@ export const Wrapper = styled.div<{ rowHeight: number }>`
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 110;
+  z-index: 111;
   position: sticky;
   width: 100%;
 

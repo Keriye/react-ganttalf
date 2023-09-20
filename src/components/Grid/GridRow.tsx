@@ -38,7 +38,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   const [dragOverPosition, setDragOverPosition] = useState<string | null>(null)
 
   useEffect(() => {
-    if (task.id.startsWith('temp')) {
+    if (task?.id?.startsWith?.('temp')) {
       rowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     }
   }, [task.id])

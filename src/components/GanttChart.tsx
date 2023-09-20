@@ -27,8 +27,9 @@ type ColumnRenderer = {
 
 export type GanttChartProps = {
   onTaskDatesChange?: () => void
-  onTaskCreate: (task: Partial<Pick<ITask, 'title' | 'assignedTo' | 'id'>>) => void
-  onTaskSelect: (task: ITask) => void
+  onTaskCreate?: (task: Partial<ITask>) => void
+  onTaskSelect?: (task: ITask) => void
+  onTaskTitleChange?: (data: { value: string; taskId: string }) => void
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -76,14 +77,13 @@ const defaultTheme = {
 }
 
 export const ActionContext = React.createContext<{
-  onTaskCreate: GanttChartProps['onTaskCreate']
-  onTaskSelect: GanttChartProps['onTaskSelect']
+  onTaskCreate?: GanttChartProps['onTaskCreate']
+  onTaskSelect?: GanttChartProps['onTaskSelect']
+  onTaskTitleChange?: GanttChartProps['onTaskTitleChange']
   columnsRenderer: GanttChartProps['columnsRenderer']
   columnsOrder: GanttChartProps['columnsOrder']
   modalRef?: React.MutableRefObject<null | HTMLDivElement>
 }>({
-  onTaskCreate: () => null,
-  onTaskSelect: () => null,
   columnsRenderer: {},
   columnsOrder: [],
 })
@@ -95,6 +95,7 @@ function GanttChart({
   translations,
   onTaskCreate,
   onTaskSelect,
+  onTaskTitleChange,
   columnsRenderer,
   columnsOrder,
   virtualization,
@@ -164,6 +165,7 @@ function GanttChart({
         value={{
           onTaskCreate,
           onTaskSelect,
+          onTaskTitleChange,
           columnsRenderer,
           columnsOrder,
         }}

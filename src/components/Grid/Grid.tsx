@@ -38,6 +38,8 @@ function Grid() {
   }
 
   const renderRow = (task: ITask, index: number) => {
+    if (!task) return null
+
     const collapsed = getCollapsedState(task)
 
     if (collapsed) return null
