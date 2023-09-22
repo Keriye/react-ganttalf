@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Connector from './Connector'
 import { ConnectorsStyled } from './Connectors.styled'
 import { useTasksStore } from '../../Store'
+import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 interface IConnector {
   taskId: string
@@ -13,10 +14,13 @@ interface IConnector {
 function Connectors() {
   const tasks = useTasksStore((state) => state.tasks)
   const [connectors, setConnectors] = useState<IConnector[]>([])
+  const virtualItems = useVirtualizationStore((state) => state.virtualItems)
 
   useEffect(() => {
-    if (tasks?.length) {
-      const _connectors = tasks.flatMap((task) => {
+    const visibleTasks = virtualItems ? virtualItems.map(({ index }) => tasks[index]) : tasks
+
+    if (visibleTasks?.length) {
+      const _connectors = visibleTasks.flatMap((task) => {
         const { successors } = task
 
         if (!successors?.length) return []
@@ -32,7 +36,7 @@ function Connectors() {
 
       setConnectors(_connectors)
     }
-  }, [tasks])
+  }, [tasks, virtualItems])
 
   function renderConnector(connector: IConnector) {
     return <Connector key={connector.key} startId={connector.taskId} endId={connector.successor} />
@@ -43,7 +47,7 @@ function Connectors() {
   return (
     <ConnectorsStyled
       id='c-chart-connectors'
-      style={{ position: 'absolute', pointerEvents: 'none', top: 0 }}
+      style={{ position: 'absolute', pointerEvents: 'none', inset: 0 }}
       width='100%'
       height='100%'
       xmlns='http://www.w3.org/2000/svg'

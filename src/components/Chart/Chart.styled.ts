@@ -1,14 +1,43 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
-export const ChartContainer = styled.div<{ width: number }>`
+export const ChartWrapper = styled.div<{ width: number }>`
   width: ${(props) => props.width}px;
   position: absolute;
-  top: 0px;
+  top: 50px;
+  //top: 0;
 `
 
-export const RowStyled = styled.div<{ type: number; rowHeight: number; isParentTask: boolean }>`
+export const ChartContainer = styled.div`
   width: 100%;
-  background: transparent;
+  position: relative;
+`
+
+export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
+  position: absolute;
+  width: 1px;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  pointer-events: none;
+  background-color: #f00;
+  left: ${({ indicatorPosition }) => indicatorPosition}px;
+
+  //&:before {
+  //  position: absolute;
+  //  content: ' ';
+  //  width: 2px;
+  //  height: 2px;
+  //  border-radius: 100%;
+  //  color: inherit;
+  //}
+`
+
+export const RowStyled = styled.div<{ type: number; rowHeight: number; segmentWidth: number; isParentTask: boolean }>`
+  width: 100%;
+  ${({ theme, segmentWidth }) => css`
+    background: left / ${segmentWidth}px repeat
+      linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
+  `}
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
 
   &:hover {

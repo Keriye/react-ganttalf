@@ -1,29 +1,28 @@
-import { DateMarking, TimeLineHeaderContainer } from './TimeLineHeader.styled'
-import { useEffect, useState } from 'react'
+import * as SC from './TimeLineHeader.styled'
 
 import { DateTime } from 'luxon'
-import { getDatesBetween } from '../../utils/helpers'
 import { useConfigStore } from '../../Store'
 
-interface ITimeLineHeaderProps {
-  startDate: Date
-  endDate: Date
+type TimeLineHeaderProps = {
+  // startDate: Date
+  // endDate: Date
+  days: Date[] | null
 }
 
-function TimeLineHeader({ startDate, endDate }: ITimeLineHeaderProps) {
+function TimeLineHeader({ days }: TimeLineHeaderProps) {
   const config = useConfigStore((state) => state.config)
 
-  const [days, setDays] = useState<Date[] | null>(null)
+  // const [days, setDays] = useState<Date[] | null>(null)
 
   const { columnWidth } = config
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      const _days = getDatesBetween({ startDate, endDate })
-
-      setDays(_days)
-    }
-  }, [endDate, startDate])
+  // useEffect(() => {
+  //   if (startDate && endDate) {
+  //     const _days = getDatesBetween({ startDate, endDate })
+  //
+  //     setDays(_days)
+  //   }
+  // }, [endDate, startDate])
 
   function renderDates() {
     if (!days) return null
@@ -35,14 +34,20 @@ function TimeLineHeader({ startDate, endDate }: ITimeLineHeaderProps) {
       const dateString = DateTime.fromJSDate(date).toFormat('LLL. dd')
 
       return (
-        <DateMarking id='sadadsasd' index={index} columnWidth={columnWidth || 36} key={dateString}>
+        <SC.DateMarking index={index} columnWidth={columnWidth || 36} key={dateString}>
           {dateString}
-        </DateMarking>
+        </SC.DateMarking>
       )
     })
   }
 
-  return <TimeLineHeaderContainer id='time-line-header-container'>{renderDates()}</TimeLineHeaderContainer>
+  const chartWidth = (days?.length ?? 0) * columnWidth
+
+  return (
+    <SC.Wrapper id='time-line-header-container' width={chartWidth}>
+      {renderDates()}
+    </SC.Wrapper>
+  )
 }
 
 export default TimeLineHeader

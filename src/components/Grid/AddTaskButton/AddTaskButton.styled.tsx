@@ -1,13 +1,13 @@
-import Icon from './SvgIcon'
 import styled from 'styled-components'
-import { useConfigStore } from '../../Store'
 
-export const AddTaskButtonContainer = styled.div<{ rowHeight: number }>`
+export const Wrapper = styled.div<{ rowHeight: number }>`
   background: ${({ theme }) => theme.white};
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
   border-top: 1px solid ${({ theme }) => theme.neutralLight};
   bottom: 0;
   left: 0;
+  right: 0;
+  z-index: 111;
   position: sticky;
   width: 100%;
 
@@ -22,7 +22,7 @@ export const AddTaskButtonContainer = styled.div<{ rowHeight: number }>`
     fill: ${({ theme }) => theme.themePrimary};
     height: ${({ rowHeight }) => rowHeight}px;
     max-width: 360px;
-    padding-left: 60px;
+    padding-left: 80px;
     width: 360px;
 
     &:hover {
@@ -35,16 +35,18 @@ export const AddTaskButtonContainer = styled.div<{ rowHeight: number }>`
   }
 `
 
-function AddTaskButton() {
-  const config = useConfigStore((state) => state.config)
-  return (
-    <AddTaskButtonContainer rowHeight={config.rowHeight} className='add-task-button-wrapper'>
-      <button className='add-task-button'>
-        <Icon width={16} height={16} iconName='Add' />
-        <div className='add-task-button__label'>Aufgabe hinzufügen</div>
-      </button>
-    </AddTaskButtonContainer>
-  )
-}
+export const EditWrapper = styled.div<{ rowHeight: number }>`
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding-left: 80px;
+  position: relative;
+  box-sizing: border-box;
+  min-height: ${({ rowHeight }) => rowHeight}px;
+  box-shadow: rgba(0, 0, 0, 0.133) 0 3.2px 7.2px 0, rgba(0, 0, 0, 0.11) 0 0.6px 1.8px 0;
+`
 
-export default AddTaskButton
+export const StyledInput = styled.input`
+  margin-left: 20px;
+  padding: 9px 5px;
+`

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import Icon from './SvgIcon'
 import ReactDOM from 'react-dom'
+// import { ActionContext } from '../GanttChart'
+import useDomStore from '../../Store/DomStore'
 
 interface IOverflowItem {
   iconName?: string
@@ -24,6 +26,9 @@ export default function IconButton({ onClick, iconName, overflowItems, className
   const [isOverflowOpen, setIsOverflowOpen] = useState(false)
   const buttonWrapperRef = useRef<HTMLDivElement>(null)
 
+  const modalNode = useDomStore((state) => state.modalNode)
+  const wrapperNode = useDomStore((state) => state.wrapperNode)
+
   const handleClick = useCallback((event: MouseEvent) => {
     const buttonWrapper = buttonWrapperRef.current
 
@@ -44,6 +49,11 @@ export default function IconButton({ onClick, iconName, overflowItems, className
 
   function onButtonClick() {
     if (overflowItems) {
+      const { left: wrapperLeft = 0 } = wrapperNode?.getBoundingClientRect() ?? {}
+      const { left = 0, width = 0 } = buttonWrapperRef.current?.getBoundingClientRect() ?? {}
+
+      useDomStore.setState({ modalShift: [left + width + 5 - wrapperLeft, 0] })
+
       setIsOverflowOpen((prevState) => !prevState)
     }
 
@@ -54,7 +64,8 @@ export default function IconButton({ onClick, iconName, overflowItems, className
 
   function renderOverflowItems() {
     if (!isOverflowOpen) return null
-    if (!buttonWrapperRef.current) return null
+    // if (!buttonWrapperRef.current) return null
+    if (!modalNode) return null
 
     return ReactDOM.createPortal(
       <ButtonOverflow>
@@ -85,7 +96,7 @@ export default function IconButton({ onClick, iconName, overflowItems, className
           )
         })}
       </ButtonOverflow>,
-      buttonWrapperRef.current,
+      modalNode,
     )
   }
 

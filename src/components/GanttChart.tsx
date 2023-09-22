@@ -4,11 +4,14 @@ import { useConfigStore, useTasksStore } from '../Store'
 import AddTaskButton from './Grid/AddTaskButton'
 import Chart from './Chart/Chart'
 import { DateTime } from 'luxon'
-import GanttChartStyled from './GanttChart.styled'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import * as SC from './GanttChart.styled'
 import Grid from './Grid/Grid'
 import { ThemeProvider } from 'styled-components'
-import TimeLineHeader from './TimeLineHeader/TimeLineHeader'
-import { useEffect } from 'react'
+import React, { JSX, useEffect } from 'react'
+import useTranslateStore, { TranslateStore } from '../Store/TranslateStore'
+import useVirtualizationStore from '../Store/VirtualizationStore'
+import useDomStore from '../Store/DomStore'
 
 interface IConfigContextProps {
   columnWidth: number
@@ -18,21 +21,32 @@ interface IConfigContextProps {
   timeLineHeight: number
 }
 
-export interface IGanttChartProps {
+type ColumnRenderer = {
+  renderer: (task: ITask) => JSX.Element
+}
+
+export type GanttChartProps = {
   onTaskDatesChange?: () => void
+  onTaskCreate?: (task: Partial<ITask>) => void
+  onTaskSelect?: (task: ITask) => void
+  onTaskTitleChange?: (data: { value: string; taskId: string }) => void
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
+  translations?: TranslateStore['translations']
+  columnsRenderer?: Record<string, ColumnRenderer>
+  columnsOrder?: Array<keyof NonNullable<GanttChartProps['columnsRenderer']>>
+  virtualization?: undefined
 }
 
 const startDate = DateTime.local().minus({ days: 15 }).toJSDate()
 const endDate = DateTime.fromJSDate(startDate).plus({ days: 7 }).toJSDate()
 
 const defaultConfig: IConfigContextProps = {
-  columnWidth: 36,
+  startDate,
   endDate,
   rowHeight: 40,
-  startDate,
+  columnWidth: 36,
   timeLineHeight: 50,
 }
 
@@ -62,53 +76,109 @@ const defaultTheme = {
   white: '#ffffff',
 }
 
-function GanttChart({ config = defaultConfig, theme = defaultTheme, tasks = [] }: IGanttChartProps) {
+export const ActionContext = React.createContext<{
+  onTaskCreate?: GanttChartProps['onTaskCreate']
+  onTaskSelect?: GanttChartProps['onTaskSelect']
+  onTaskTitleChange?: GanttChartProps['onTaskTitleChange']
+  columnsRenderer: GanttChartProps['columnsRenderer']
+  columnsOrder: GanttChartProps['columnsOrder']
+  modalRef?: React.MutableRefObject<null | HTMLDivElement>
+}>({
+  columnsRenderer: {},
+  columnsOrder: [],
+})
+
+function GanttChart({
+  config = defaultConfig,
+  theme = defaultTheme,
+  tasks: initTasks = [],
+  translations,
+  onTaskCreate,
+  onTaskSelect,
+  onTaskTitleChange,
+  columnsRenderer,
+  columnsOrder,
+  virtualization,
+}: GanttChartProps) {
   const storeConfig = useConfigStore((state) => state.config)
 
+  const tasks = useTasksStore((state) => state.tasks)
   const setTasks = useTasksStore((state) => state.setTasks)
   const setConfig = useConfigStore((state) => state.setConfig)
+  const setTranslations = useTranslateStore((state) => state.setTranslations)
+  const setVirtualData = useVirtualizationStore((store) => store.setVirtualData)
+  const [wrapperNode, setWrapperNode] = useDomStore((state) => [state.wrapperNode, state.setWrapperNode])
+  const [[modalX, modalY], setModalNode] = useDomStore((state) => [state.modalShift, state.setModalNode])
 
-  const { startDate, endDate } = storeConfig
+  const { rowHeight } = storeConfig
+
+  const virtualizer = useVirtualizer({
+    count: tasks?.filter((t) => !t.collapsed)?.length,
+    getScrollElement: () => wrapperNode,
+    estimateSize: () => rowHeight,
+    overscan: 15,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
+  //init translations store
+  useEffect(() => {
+    translations && setTranslations(translations)
+  }, [setTranslations, translations])
 
   useEffect(() => {
+    if (virtualization) {
+      console.info(
+        '💥💥💥 --- virtualItems updated --- 💥💥💥 ',
+        tasks?.filter((t) => !t.collapsed)?.length,
+        virtualizer.getTotalSize(),
+      )
+      setVirtualData({ items: virtualItems, totalHeight: virtualizer.getTotalSize() })
+    }
+  }, [virtualization, virtualItems?.[0]?.index, virtualItems?.[virtualItems.length - 1]?.index])
+
+  useEffect(() => {
+    const startDay = new Date(config.startDate).getDay()
+    const daysDelta = 14 + startDay - 1
+
     setConfig({
       ...defaultConfig,
       ...config,
-      // startdate is config.startDate +10 days
+      // startdate is config.startDate + ~10 days (first Monday)
       startDate: DateTime.fromJSDate(config.startDate as Date)
-        .minus({ days: 10 })
+        .minus({ days: daysDelta })
         .toJSDate(),
     })
 
     setTasks(
-      tasks.map((task) => ({
+      initTasks.map((task) => ({
         ...task,
         startDate: new Date(task.startDate as Date),
         endDate: new Date(task.endDate as Date),
       })),
     )
-  }, [config, tasks, setTasks, setConfig])
-
-  function onChartScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
-    const { scrollLeft } = event.target as HTMLDivElement
-
-    const timeLineHeader = document.getElementById('time-line-header-container')
-
-    if (timeLineHeader) timeLineHeader.scrollLeft = scrollLeft
-  }
+  }, [config, initTasks, setTasks, setConfig])
 
   return (
     <ThemeProvider theme={{ ...defaultTheme, ...theme, ...config }}>
-      <GanttChartStyled className='ganttalf-wrapper' id='react-ganttalf'>
-        <TimeLineHeader endDate={endDate as Date} startDate={startDate as Date} />
-        <div className='ganttalf__body-wrapper'>
-          <div className='ganttalf__body' onScroll={onChartScroll}>
+      <ActionContext.Provider
+        value={{
+          onTaskCreate,
+          onTaskSelect,
+          onTaskTitleChange,
+          columnsRenderer,
+          columnsOrder,
+        }}
+      >
+        <SC.Wrapper>
+          <SC.ScrollWrapper ref={setWrapperNode} className='ganttalf-wrapper' id='react-ganttalf'>
             <Chart />
             <Grid />
             <AddTaskButton />
-          </div>
-        </div>
-      </GanttChartStyled>
+          </SC.ScrollWrapper>
+          <SC.ModalWrapper ref={setModalNode} x={modalX} y={modalY} />
+        </SC.Wrapper>
+      </ActionContext.Provider>
     </ThemeProvider>
   )
 }

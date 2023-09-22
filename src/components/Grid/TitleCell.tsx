@@ -1,9 +1,13 @@
-import { ITask } from '../../types'
+import { ITask, TaskStatus } from '../../types'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
-import { useState } from 'react'
-import { useTasksStore } from '../../Store'
+import React, { useCallback, useContext, useState } from 'react'
+import { useConfigStore, useTasksStore } from '../../Store'
+import { ActionContext } from '../GanttChart'
+import useTranslateStore from '../../Store/TranslateStore'
+import { getDatesBetween } from '../../utils/helpers'
+// import useDomStore from '../../Store/DomStore'
 
 interface ITitleCellProps {
   task: ITask
@@ -12,12 +16,25 @@ interface ITitleCellProps {
 
 export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const [title, setTitle] = useState(task.title)
+  const t = useTranslateStore((store) => store.t)
+
+  const { onTaskSelect, onTaskTitleChange } = useContext(ActionContext)
 
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
+  const deleteTask = useTasksStore((state) => state.deleteTask)
+  const onStatusChange = useTasksStore((state) => state.onStatusChange)
+  const onSubtaskCreate = useTasksStore((state) => state.onSubtaskCreate)
+  const config = useConfigStore((state) => state.config)
 
+  const { startDate, columnWidth } = config
+
+  // const wrapperNode = useDomStore((store) => store.wrapperNode)
+  // const gridNode = useDomStore((store) => store.gridNode)
+
+  // const hasParent = !!task.predecessors?.length
   const hasSubTasks = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
 
-  function renderCollapseButton() {
+  const renderCollapseButton = () => {
     if (!hasSubTasks) return null
 
     return (
@@ -32,6 +49,42 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     )
   }
 
+  const handleTaskSelect = useCallback(() => {
+    onTaskSelect?.(task)
+  }, [onTaskSelect, task])
+
+  const handleTaskDelete = useCallback(() => {
+    deleteTask(task.id)
+  }, [deleteTask, task.id])
+
+  const handleStatusChange = useCallback(() => {
+    onStatusChange(!task.status, task.id)
+  }, [onStatusChange, task.id, task.status])
+
+  const handleSubtaskCreate = useCallback(() => {
+    onSubtaskCreate(task.id)
+  }, [onSubtaskCreate, task.id])
+
+  const handleScrollToTask = useCallback(() => {
+    if (!task.startDate) return
+
+    const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
+    // const ganttChart = document.querySelector(`div[class^=Chart-module_chart]`);
+    const ganttChart = document.querySelector('#react-ganttalf')
+    const scrollLeft = diff * columnWidth + 350
+
+    ganttChart?.scrollTo(scrollLeft, ganttChart.scrollTop)
+  }, [columnWidth, startDate, task.startDate])
+
+  const handleEnterPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (event) => {
+      if (event.key === 'Enter' && event.currentTarget?.value) {
+        onTaskTitleChange?.({ value: event.currentTarget.value, taskId: task.id })
+      }
+    },
+    [onTaskTitleChange, task.id],
+  )
+
   return (
     <TitleCellStyled
       taskLevel={taskLevel}
@@ -45,40 +98,45 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
         onChange={(event) => {
           setTitle(event.target.value)
         }}
+        onKeyUp={handleEnterPress}
         value={title}
         type='text'
       />
       <div className='c-grid-title-icons-wrapper'>
-        <IconButton
-          onClick={() => {
-            console.log(123)
-          }}
-          iconName='Info'
-          className='c-grid-title-icon-button-info'
-        />
+        <IconButton onClick={handleTaskSelect} iconName='Info' className='c-grid-title-icon-button-info' />
         <IconButton
           overflowItems={[
             {
               iconName: 'HorizontalTabKey',
               key: 'HorizontalTabKey',
-              text: 'Scrollen Sie zur Aufgabe',
-              onClick: () => {
-                console.log('Add to favorites')
-              },
+              disabled: !task.startDate,
+              text: t('menu.scroll.to.task'),
+              onClick: handleScrollToTask,
             },
             {
               iconName: 'Info',
               key: 'Info',
-              text: 'Details öffnen',
-              onClick: () => {
-                console.log('Add to favorites')
-              },
+              text: t('menu.open.details'),
+              onClick: handleTaskSelect,
+            },
+            {
+              iconName: 'PaddingRight',
+              key: 'Subtusk',
+              text: t('menu.make.subtask'),
+              onClick: handleSubtaskCreate,
+            },
+            {
+              iconName: 'PaddingLeft',
+              key: 'Promote',
+              text: t('menu.promote.subtask'),
+              onClick: handleSubtaskCreate,
             },
             { key: 'devider-1', type: 'divider' },
             {
               iconName: 'Cut',
               key: 'Cut',
               text: 'Aufgabe ausschneiden',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -87,6 +145,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               iconName: 'Copy',
               key: 'Copy',
               text: 'Aufgabe kopieren',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -95,6 +154,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               iconName: 'Paste',
               key: 'Paste',
               text: 'Aufgabe einfügen',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -103,6 +163,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               iconName: 'Insert',
               key: 'Insert',
               text: 'Vorgang oben einfügen',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -110,15 +171,14 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
             {
               iconName: 'Delete',
               key: 'Delete',
-              text: 'Aufgabe löschen',
-              onClick: () => {
-                console.log('Add to favorites')
-              },
+              text: t('menu.delete.task'),
+              onClick: handleTaskDelete,
             },
             {
               iconName: 'Link',
               key: 'Link',
               text: 'Link zu Vorgang kopieren',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -128,6 +188,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               iconName: 'DependencyAdd',
               key: 'DependencyAdd',
               text: 'Abhängigkeit hinzufügen',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
@@ -136,17 +197,16 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               iconName: 'DependencyRemove',
               key: 'DependencyRemove',
               text: 'Abhängigkeit entfernen',
+              disabled: true,
               onClick: () => {
                 console.log('Add to favorites')
               },
             },
             {
-              iconName: 'Completed',
-              key: 'Completed',
-              text: 'Vorgang erledigen',
-              onClick: () => {
-                console.log('Add to favorites')
-              },
+              iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
+              key: 'Status',
+              text: task.status === TaskStatus.Completed ? t('menu.status.complete') : t('menu.status.reactivate'),
+              onClick: handleStatusChange,
             },
           ]}
           iconName='MoreVertical'
