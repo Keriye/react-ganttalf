@@ -31,7 +31,7 @@ export default function TimeLineDateRange({ startDate, endDate }: ITimeLineDateR
     }
 
     return (
-      <div key={DateTime.fromJSDate(day).day} className={classNames}>
+      <div key={day.toString()} className={classNames}>
         {DateTime.fromJSDate(day).day}
       </div>
     )

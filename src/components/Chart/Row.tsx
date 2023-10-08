@@ -1,13 +1,15 @@
 import { MileStone, RowStyled, Task } from './Chart.styled'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
-import { useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { ITask } from '../../types'
 import NewLinkConnector from '../Connectors/NewLinkConnector'
 import ReactDOM from 'react-dom'
 import TimeLineDateRange from '../TimeLineHeader/TimeLineDateRange'
 import { ActionContext } from '../GanttChart'
+import useDomStore from '../../Store/DomStore'
+import useInteractionStore from '../../Store/InteractionStore'
 
 interface IRowProps {
   task: ITask
@@ -16,15 +18,14 @@ interface IRowProps {
 function Row({ task }: IRowProps) {
   const config = useConfigStore((state) => state.config)
   const onTaskDateChange = useTasksStore((state) => state.onTaskDateChange)
-
-  const { onTaskSelect } = useContext(ActionContext)
+  const headerNode = useDomStore((state) => state.headerNode)
+  const [sourceId, setSourceId] = useInteractionStore((state) => [state.sourceId, state.setSourceId])
 
   const { rowHeight, columnWidth, startDate } = config
 
-  const [resizing, setResizing] = useState(false)
-  const [displayConnector, setDisplayConnector] = useState(false)
+  const { onTaskSelect, onTaskTimeChange } = useContext(ActionContext)
 
-  const isParentTask = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
+  const [displayConnector, setDisplayConnector] = useState(false)
 
   const [taskDatesChanges, setTaskDatesChanges] = useState({
     startDate: task.startDate,
@@ -32,21 +33,16 @@ function Row({ task }: IRowProps) {
     startDateDiff: 0,
     endDateDiff: 0,
   })
-  const taskRef = useRef<HTMLDivElement>(null)
 
+  const taskRef = useRef<HTMLDivElement>(null)
   const rowRef = useRef(null)
-  const dragging = useRef(false)
+  const initPositionRef = useRef<{ pageX: number; endpoint?: string }>({ pageX: 0 })
+  const [isTaskMoving, setIsTaskMoving] = useState(false)
+  const [isTaskResizing, setIsTaskResizing] = useState(false)
 
   const [displayTimeLineDateRange, setDisplayTimeLineDateRange] = useState(false)
 
-  useEffect(() => {
-    setTaskDatesChanges({
-      startDate: task.startDate,
-      endDate: task.endDate,
-      startDateDiff: 0,
-      endDateDiff: 0,
-    })
-  }, [task])
+  const isParentTask = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
 
   const daysFromStart = getDatesBetween({
     startDate: startDate as Date,
@@ -59,105 +55,13 @@ function Row({ task }: IRowProps) {
     endDate: task.endDate as Date,
   })
 
-  function onTaskClick() {
-    if (dragging.current) return
-
-    onTaskSelect?.(task)
-  }
-
-  function onDragTaskRange(event: React.MouseEvent, endpoint: 'start' | 'end') {
-    const taskElement = taskRef.current
-
-    if (!taskElement) return
-
-    event.preventDefault()
-    event.stopPropagation()
-    window.addEventListener('mousemove', resize)
-    window.addEventListener('mouseup', stopResize)
-
-    const originalWidth = taskElement.clientWidth
-    const original_mouse_x = event.pageX
+  // handle task move
+  useEffect(() => {
     const leftPosition = daysFromStart.length * columnWidth
     let currentTaskDatesChanges = taskDatesChanges
 
-    function resize(event: MouseEvent) {
-      setResizing(true)
-
-      let changedDateSteps = 0
-
-      if (!taskElement) return
-
-      if (endpoint === 'end') {
-        let newWidth = event.pageX - taskElement.getBoundingClientRect().left
-
-        // snap to grid
-        newWidth = Math.round(newWidth / columnWidth) * columnWidth
-
-        if (newWidth < columnWidth) return
-
-        taskElement.style.width = newWidth + 'px'
-
-        changedDateSteps = (newWidth - originalWidth) / columnWidth
-      }
-
-      if (endpoint === 'start') {
-        let newLeftPosition = leftPosition - (original_mouse_x - event.pageX)
-
-        // snap to grid
-        newLeftPosition = Math.round(newLeftPosition / columnWidth) * columnWidth
-
-        const newWidth = originalWidth + (leftPosition - newLeftPosition)
-
-        if (newWidth < columnWidth) return
-
-        taskElement.style.left = newLeftPosition + 'px'
-        taskElement.style.width = originalWidth + (leftPosition - newLeftPosition) + 'px'
-
-        changedDateSteps = (newLeftPosition - leftPosition) / columnWidth
-      }
-
-      const newStartDate = addDateTime(task.startDate as Date, {
-        days: changedDateSteps,
-      })
-
-      const newEndDate = addDateTime(task.endDate as Date, {
-        days: changedDateSteps,
-      })
-
-      if (!areDatesEqual(newStartDate, currentTaskDatesChanges.startDate as Date)) {
-        currentTaskDatesChanges = {
-          startDate: endpoint === 'start' ? newStartDate : currentTaskDatesChanges.startDate,
-          endDate: endpoint === 'end' ? newEndDate : currentTaskDatesChanges.endDate,
-          startDateDiff: endpoint === 'start' ? changedDateSteps : 0,
-          endDateDiff: endpoint === 'end' ? changedDateSteps : 0,
-        }
-
-        setTaskDatesChanges(currentTaskDatesChanges)
-      }
-    }
-
-    function stopResize() {
-      setResizing(false)
-      onTaskDateChange(task.id, currentTaskDatesChanges)
-      window.removeEventListener('mousemove', resize)
-    }
-  }
-
-  function onDragTaskBar(event: React.MouseEvent) {
-    const taskElement = taskRef.current
-
-    event.preventDefault()
-    window.addEventListener('mousemove', drag)
-    window.addEventListener('mouseup', stopDrag)
-
-    const original_mouse_x = event.pageX
-    const leftPosition = daysFromStart.length * columnWidth
-
-    let currentTaskDatesChanges = taskDatesChanges
-
-    function drag(event: MouseEvent) {
-      dragging.current = true
-      let newLeftPosition = leftPosition - (original_mouse_x - event.pageX)
+    const handleTaskMove = (event: MouseEvent) => {
+      let newLeftPosition = leftPosition - (initPositionRef.current.pageX - event.pageX)
 
       // snap to grid
       newLeftPosition = Math.round(newLeftPosition / columnWidth) * columnWidth
@@ -183,29 +87,157 @@ function Row({ task }: IRowProps) {
 
         setTaskDatesChanges(currentTaskDatesChanges)
 
-        if (taskElement) {
-          taskElement.style.left = newLeftPosition + 'px'
+        if (taskRef.current) {
+          taskRef.current.style.left = newLeftPosition + 'px'
         }
       }
     }
 
-    function stopDrag() {
+    const stopTaskMove = (event: MouseEvent) => {
+      const isStatic = Math.abs(initPositionRef.current.pageX - event.pageX) < 5
+
+      const { startDateDiff, endDateDiff } = currentTaskDatesChanges
+      if (isStatic) {
+        onTaskSelect?.(task)
+      } else {
+        if (typeof onTaskTimeChange === 'function') {
+          onTaskTimeChange(task, { start: startDateDiff, end: endDateDiff })
+        } else {
+          onTaskDateChange(task.id, currentTaskDatesChanges)
+        }
+      }
+
+      setIsTaskMoving(false)
+    }
+
+    if (isTaskMoving) {
+      window.addEventListener('mouseup', stopTaskMove)
+      window.addEventListener('mousemove', handleTaskMove)
+    }
+
+    return () => {
+      window.removeEventListener('mouseup', stopTaskMove)
+      window.removeEventListener('mousemove', handleTaskMove)
+    }
+  }, [isTaskMoving])
+
+  // handle task resize
+  useEffect(() => {
+    const originalWidth = taskRef.current?.clientWidth ?? 0
+    const leftPosition = daysFromStart.length * columnWidth
+    let currentTaskDatesChanges = taskDatesChanges
+
+    const handleTaskResize = (event: MouseEvent) => {
+      let changedDateSteps = 0
+
+      if (!taskRef.current) return
+
+      const { pageX, endpoint } = initPositionRef.current
+
+      if (endpoint === 'end') {
+        let newWidth = event.pageX - taskRef.current.getBoundingClientRect().left
+
+        // snap to grid
+        newWidth = Math.round(newWidth / columnWidth) * columnWidth
+
+        if (newWidth < columnWidth) return
+
+        taskRef.current.style.width = newWidth + 'px'
+
+        changedDateSteps = (newWidth - originalWidth) / columnWidth
+      }
+
+      if (endpoint === 'start') {
+        let newLeftPosition = leftPosition - (pageX - event.pageX)
+
+        // snap to grid
+        newLeftPosition = Math.round(newLeftPosition / columnWidth) * columnWidth
+
+        const newWidth = originalWidth + (leftPosition - newLeftPosition)
+
+        if (newWidth < columnWidth) return
+
+        taskRef.current.style.left = newLeftPosition + 'px'
+        taskRef.current.style.width = originalWidth + (leftPosition - newLeftPosition) + 'px'
+
+        changedDateSteps = (newLeftPosition - leftPosition) / columnWidth
+      }
+
+      const newStartDate = addDateTime(task.startDate as Date, {
+        days: changedDateSteps,
+      })
+
+      const newEndDate = addDateTime(task.endDate as Date, {
+        days: changedDateSteps,
+      })
+
+      if (!areDatesEqual(newStartDate, currentTaskDatesChanges.startDate as Date)) {
+        currentTaskDatesChanges = {
+          startDate: endpoint === 'start' ? newStartDate : currentTaskDatesChanges.startDate,
+          endDate: endpoint === 'end' ? newEndDate : currentTaskDatesChanges.endDate,
+          startDateDiff: endpoint === 'start' ? changedDateSteps : 0,
+          endDateDiff: endpoint === 'end' ? changedDateSteps : 0,
+        }
+
+        setTaskDatesChanges(currentTaskDatesChanges)
+      }
+    }
+
+    const stopTaskResize = () => {
       onTaskDateChange(task.id, currentTaskDatesChanges)
 
-      setTimeout(() => {
-        dragging.current = false
-      }, 100)
+      setIsTaskResizing(false)
 
-      window.removeEventListener('mousemove', drag)
+      const { startDateDiff, endDateDiff } = currentTaskDatesChanges
+      onTaskTimeChange?.(task, { start: startDateDiff, end: endDateDiff })
     }
-  }
+
+    if (isTaskResizing) {
+      window.addEventListener('mouseup', stopTaskResize)
+      window.addEventListener('mousemove', handleTaskResize)
+    }
+
+    return () => {
+      window.removeEventListener('mouseup', stopTaskResize)
+      window.removeEventListener('mousemove', handleTaskResize)
+    }
+  }, [isTaskResizing])
+
+  useEffect(() => {
+    setTaskDatesChanges({
+      startDate: task.startDate,
+      endDate: task.endDate,
+      startDateDiff: 0,
+      endDateDiff: 0,
+    })
+  }, [task])
+
+  const getStartTaskResizeHandler = useCallback((event: React.MouseEvent, endpoint: 'start' | 'end') => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!taskRef.current) return
+
+    initPositionRef.current = { pageX: event.pageX, endpoint }
+    setIsTaskResizing(true)
+  }, [])
+
+  const handleStartTaskMove = useCallback((event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!taskRef.current) return
+
+    initPositionRef.current = { pageX: event.pageX }
+    setIsTaskMoving(true)
+  }, [])
 
   function renderDraggableIndicator(endpoint: 'start' | 'end') {
-    if (resizing) return null
+    if (isTaskResizing) return null
 
     return (
       <div
-        onMouseDown={(event) => onDragTaskRange(event, endpoint)}
+        onMouseDown={(event) => getStartTaskResizeHandler(event, endpoint)}
         className='c-chart-bar-task-draggable-indicator-wrapper'
       >
         <div className='c-chart-bar-task-draggable-indicator' />
@@ -218,6 +250,7 @@ function Row({ task }: IRowProps) {
     event.stopPropagation()
 
     setDisplayConnector(true)
+    setSourceId(task.id)
 
     window.addEventListener('mouseup', stopNewLink)
 
@@ -228,11 +261,27 @@ function Row({ task }: IRowProps) {
     }
   }
 
+  const onEndNewLink = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (sourceId) {
+        console.info('💥💥 link end 💥💥 sourceId: ', sourceId, ' targetId: ', task.id)
+      }
+    },
+    [sourceId, task.id],
+  )
+
   function renderLinkPoint(endpoint: string) {
-    if (resizing) return null
+    if (isTaskResizing) return null
 
     return (
-      <div onMouseDown={onStartNewLink} className={`c-chart-bar-task-link-wrapper link-${endpoint}`}>
+      <div
+        onMouseDown={onStartNewLink}
+        onMouseUp={onEndNewLink}
+        className={`c-chart-bar-task-link-wrapper link-${endpoint}`}
+      >
         <div className='c-chart-bar-task-link '>
           <div className='c-chart-bar-task-link-small' />
         </div>
@@ -249,7 +298,7 @@ function Row({ task }: IRowProps) {
     )
   }
 
-  function renderTask() {
+  const renderTask = () => {
     if (task.type === 2) {
       return (
         <MileStone
@@ -262,8 +311,7 @@ function Row({ task }: IRowProps) {
         >
           {renderLinkPoint('start')}
           <div
-            onMouseDown={onDragTaskBar}
-            onClick={onTaskClick}
+            onMouseDown={handleStartTaskMove}
             className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}
           ></div>
           {renderLinkPoint('end')}
@@ -283,11 +331,7 @@ function Row({ task }: IRowProps) {
       >
         {renderLinkPoint('start')}
         {renderConnectorPoint('start')}
-        <div
-          onMouseDown={onDragTaskBar}
-          onClick={onTaskClick}
-          className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}
-        >
+        <div onMouseDown={handleStartTaskMove} className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}>
           {!isParentTask && (
             <>
               {renderDraggableIndicator('start')}
@@ -327,26 +371,13 @@ function Row({ task }: IRowProps) {
     })
   }
 
-  function renderTaskDateRange() {
-    if (!displayTimeLineDateRange) return null
-
-    // get time-line-header-container element element
-    const timeLineHeaderContainer = document.getElementById('time-line-header-container')
-
-    if (!timeLineHeaderContainer) return null
+  const renderTaskDateRange = () => {
+    if (!displayTimeLineDateRange || !headerNode) return null
 
     return ReactDOM.createPortal(
       <TimeLineDateRange startDate={taskDatesChanges.startDate as Date} endDate={taskDatesChanges.endDate as Date} />,
-      timeLineHeaderContainer,
+      headerNode,
     )
-  }
-
-  function renderConnector() {
-    if (displayConnector) {
-      return <NewLinkConnector task={task} />
-    }
-
-    return null
   }
 
   return (
@@ -360,7 +391,7 @@ function Row({ task }: IRowProps) {
       onMouseOut={onMouseOut}
       style={{ height: rowHeight }}
     >
-      {renderConnector()}
+      {displayConnector && <NewLinkConnector task={task} />}
       {renderTaskDateRange()}
       {renderTask()}
     </RowStyled>

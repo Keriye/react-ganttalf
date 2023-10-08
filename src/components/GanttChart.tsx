@@ -28,8 +28,11 @@ type ColumnRenderer = {
 export type GanttChartProps = {
   onTaskDatesChange?: () => void
   onTaskCreate?: (task: Partial<ITask>) => void
+  onTaskAppend?: (task: Partial<ITask>, options?: { replace?: boolean }) => void
   onTaskSelect?: (task: ITask) => void
   onTaskTitleChange?: (data: { value: string; taskId: string }) => void
+  onTaskTimeChange?: (task: ITask, options: { start?: number; end: number }) => void
+  onTaskReorder?: (sourceId: string, targetId: string) => void
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -76,14 +79,19 @@ const defaultTheme = {
   white: '#ffffff',
 }
 
-export const ActionContext = React.createContext<{
-  onTaskCreate?: GanttChartProps['onTaskCreate']
-  onTaskSelect?: GanttChartProps['onTaskSelect']
-  onTaskTitleChange?: GanttChartProps['onTaskTitleChange']
-  columnsRenderer: GanttChartProps['columnsRenderer']
-  columnsOrder: GanttChartProps['columnsOrder']
-  modalRef?: React.MutableRefObject<null | HTMLDivElement>
-}>({
+export const ActionContext = React.createContext<
+  Pick<
+    GanttChartProps,
+    | 'onTaskCreate'
+    | 'onTaskAppend'
+    | 'onTaskSelect'
+    | 'onTaskTitleChange'
+    | 'onTaskTimeChange'
+    | 'onTaskReorder'
+    | 'columnsRenderer'
+    | 'columnsOrder'
+  > & { modalRef?: React.MutableRefObject<null | HTMLDivElement> }
+>({
   columnsRenderer: {},
   columnsOrder: [],
 })
@@ -94,8 +102,11 @@ function GanttChart({
   tasks: initTasks = [],
   translations,
   onTaskCreate,
+  onTaskAppend,
   onTaskSelect,
   onTaskTitleChange,
+  onTaskTimeChange,
+  onTaskReorder,
   columnsRenderer,
   columnsOrder,
   virtualization,
@@ -128,14 +139,9 @@ function GanttChart({
 
   useEffect(() => {
     if (virtualization) {
-      console.info(
-        '💥💥💥 --- virtualItems updated --- 💥💥💥 ',
-        tasks?.filter((t) => !t.collapsed)?.length,
-        virtualizer.getTotalSize(),
-      )
       setVirtualData({ items: virtualItems, totalHeight: virtualizer.getTotalSize() })
     }
-  }, [virtualization, virtualItems?.[0]?.index, virtualItems?.[virtualItems.length - 1]?.index])
+  }, [setVirtualData, virtualization, virtualItems?.[0]?.index, virtualItems?.[virtualItems.length - 1]?.index])
 
   useEffect(() => {
     const startDay = new Date(config.startDate).getDay()
@@ -164,8 +170,11 @@ function GanttChart({
       <ActionContext.Provider
         value={{
           onTaskCreate,
+          onTaskAppend,
           onTaskSelect,
           onTaskTitleChange,
+          onTaskTimeChange,
+          onTaskReorder,
           columnsRenderer,
           columnsOrder,
         }}

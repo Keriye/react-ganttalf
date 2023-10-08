@@ -5,6 +5,8 @@ type DomState = {
   setWrapperNode: (node: DomState['wrapperNode']) => void
   gridNode: HTMLDivElement | null
   setGridNode: (node: DomState['gridNode']) => void
+  headerNode: HTMLDivElement | null
+  setHeaderNode: (node: DomState['headerNode']) => void
   modalNode: HTMLDivElement | null
   setModalNode: (node: DomState['modalNode']) => void
   modalShift: [number, number]
@@ -15,6 +17,8 @@ const useDomStore = create<DomState>()((set) => ({
   setWrapperNode: (node: HTMLDivElement | null) => set({ wrapperNode: node }),
   gridNode: null,
   setGridNode: (node: HTMLDivElement | null) => set({ gridNode: node }),
+  headerNode: null,
+  setHeaderNode: (node: HTMLDivElement | null) => set({ headerNode: node }),
   modalNode: null,
   setModalNode: (node: HTMLDivElement | null) => set({ modalNode: node }),
   modalShift: [0, 0],

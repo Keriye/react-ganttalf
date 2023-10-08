@@ -341,7 +341,7 @@ export const GridRowStyled = styled.div<{
   }
 `
 
+// flex: 0 0 ${(p) => p.width ?? 0}px;
 export const CustomGridCell = styled.div<{ width: number }>`
   display: flex;
-  flex: 0 0 ${(p) => p.width ?? 0}px;
 `
