@@ -1,7 +1,7 @@
 import { useConfigStore, useTasksStore } from '../../Store'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
-import Avatar from './Avatar'
+// import Avatar from './Avatar'
 import Checkbox from './Checkbox'
 import * as SC from './Grid.styled'
 import { ITask, TaskStatus } from '../../types'
@@ -18,9 +18,9 @@ interface IGridRowProps {
 
 const renderSortOrderColumnDefault = (task: ITask) => task.sortOrder
 
-const renderAssigneeColumnDefault = (task: ITask) => (
-  <Avatar className='c-grid-avatar' name={task.assignedTo?.name} imgSrc={task.assignedTo?.pictureUrl} />
-)
+// const renderAssigneeColumnDefault = (task: ITask) => (
+//   <Avatar className='c-grid-avatar' name={task.assignedTo?.name} imgSrc={task.assignedTo?.pictureUrl} />
+// )
 
 export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IGridRowProps) {
   const addTask = useTasksStore((state) => state.addTask)
@@ -28,7 +28,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
 
-  const { columnsRenderer, columnsOrder } = useContext(ActionContext)
+  const { columnsRenderer, columnsOrder, onTaskAppend, onTaskReorder } = useContext(ActionContext)
 
   const { rowHeight } = config
 
@@ -48,6 +48,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
 
     if (!element) return
 
+    event.dataTransfer.setData('sourceId', task.id)
     event.dataTransfer.setDragImage(element, 10, 10)
   }
 
@@ -135,9 +136,15 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     openSubTasksRef.current = null
   }
 
-  function onDrop() {
+  function onDrop(event: React.DragEvent) {
     setDragOverPosition(null)
     clearTimeout(openSubTasksRef.current as NodeJS.Timeout)
+
+    const sourceId = event.dataTransfer.getData('sourceId')
+
+    if (sourceId) {
+      onTaskReorder?.(sourceId, task.id)
+    }
 
     openSubTasksRef.current = null
   }
@@ -147,7 +154,11 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     (event) => {
       event.stopPropagation()
 
-      addTask({}, { sourceId: task.id, position })
+      if (onTaskAppend) {
+        onTaskAppend(task, { replace: position === 'before' })
+      } else {
+        addTask({}, { sourceId: task.id, position })
+      }
     }
 
   function renderAddTaskButton(position: 'before' | 'after') {
@@ -165,11 +176,11 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
       {(columnsRenderer?.sortOrder?.renderer ?? renderSortOrderColumnDefault)(task)}
     </div>
   )
-  const renderAssigneeColumn = () => (
-    <div className='c-grid-avatar-wrapper'>
-      {(columnsRenderer?.assignee?.renderer ?? renderAssigneeColumnDefault)(task)}
-    </div>
-  )
+  // const renderAssigneeColumn = () => (
+  //   <div className='c-grid-avatar-wrapper'>
+  //     {(columnsRenderer?.assignee?.renderer ?? renderAssigneeColumnDefault)(task)}
+  //   </div>
+  // )
 
   const renderCustomColumns = () => {
     if (!columnsOrder) {
@@ -220,7 +231,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
         />
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
-        {renderAssigneeColumn()}
+        {/*{renderAssigneeColumn()}*/}
       </div>
       <div className={getDragOverRightClassName()}>
         <Icon className='c-grid-drag-over-icon' width={18} height={18} iconName='PaddingRight' />

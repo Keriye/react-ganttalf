@@ -2,6 +2,7 @@ import * as SC from './TimeLineHeader.styled'
 
 import { DateTime } from 'luxon'
 import { useConfigStore } from '../../Store'
+import useDomStore from '../../Store/DomStore'
 
 type TimeLineHeaderProps = {
   // startDate: Date
@@ -11,6 +12,7 @@ type TimeLineHeaderProps = {
 
 function TimeLineHeader({ days }: TimeLineHeaderProps) {
   const config = useConfigStore((state) => state.config)
+  const setHeaderNodeRef = useDomStore((state) => state.setHeaderNode)
 
   // const [days, setDays] = useState<Date[] | null>(null)
 
@@ -44,7 +46,7 @@ function TimeLineHeader({ days }: TimeLineHeaderProps) {
   const chartWidth = (days?.length ?? 0) * columnWidth
 
   return (
-    <SC.Wrapper id='time-line-header-container' width={chartWidth}>
+    <SC.Wrapper id='time-line-header-container' ref={setHeaderNodeRef} width={chartWidth}>
       {renderDates()}
     </SC.Wrapper>
   )
