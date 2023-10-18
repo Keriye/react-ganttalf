@@ -33,6 +33,7 @@ export type GanttChartProps = {
   onTaskTitleChange?: (data: { value: string; taskId: string }) => void
   onTaskTimeChange?: (task: ITask, options: { start?: number; end: number }) => void
   onTaskReorder?: (sourceId: string, targetId: string) => void
+  onLinkCreate?: (sourceId: string, targetId: string) => void
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -88,6 +89,7 @@ export const ActionContext = React.createContext<
     | 'onTaskTitleChange'
     | 'onTaskTimeChange'
     | 'onTaskReorder'
+    | 'onLinkCreate'
     | 'columnsRenderer'
     | 'columnsOrder'
   > & { modalRef?: React.MutableRefObject<null | HTMLDivElement> }
@@ -107,6 +109,7 @@ function GanttChart({
   onTaskTitleChange,
   onTaskTimeChange,
   onTaskReorder,
+  onLinkCreate,
   columnsRenderer,
   columnsOrder,
   virtualization,
@@ -119,7 +122,7 @@ function GanttChart({
   const setTranslations = useTranslateStore((state) => state.setTranslations)
   const setVirtualData = useVirtualizationStore((store) => store.setVirtualData)
   const [wrapperNode, setWrapperNode] = useDomStore((state) => [state.wrapperNode, state.setWrapperNode])
-  const [[modalX, modalY], setModalNode] = useDomStore((state) => [state.modalShift, state.setModalNode])
+  const [modalShift, setModalNode] = useDomStore((state) => [state.modalShift, state.setModalNode])
 
   const { rowHeight } = storeConfig
 
@@ -175,6 +178,7 @@ function GanttChart({
           onTaskTitleChange,
           onTaskTimeChange,
           onTaskReorder,
+          onLinkCreate,
           columnsRenderer,
           columnsOrder,
         }}
@@ -185,7 +189,7 @@ function GanttChart({
             <Grid />
             <AddTaskButton />
           </SC.ScrollWrapper>
-          <SC.ModalWrapper ref={setModalNode} x={modalX} y={modalY} />
+          <SC.ModalWrapper ref={setModalNode} {...modalShift} />
         </SC.Wrapper>
       </ActionContext.Provider>
     </ThemeProvider>
