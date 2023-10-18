@@ -23,7 +23,7 @@ function Row({ task }: IRowProps) {
 
   const { rowHeight, columnWidth, startDate } = config
 
-  const { onTaskSelect, onTaskTimeChange } = useContext(ActionContext)
+  const { onTaskSelect, onTaskTimeChange, onLinkCreate } = useContext(ActionContext)
 
   const [displayConnector, setDisplayConnector] = useState(false)
 
@@ -261,25 +261,19 @@ function Row({ task }: IRowProps) {
     }
   }
 
-  const onEndNewLink = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
-
-      if (sourceId) {
-        console.info('💥💥 link end 💥💥 sourceId: ', sourceId, ' targetId: ', task.id)
-      }
-    },
-    [sourceId, task.id],
-  )
+  const onEndNewLink = useCallback(() => {
+    if (sourceId && sourceId !== task.id) {
+      onLinkCreate?.(sourceId, task.id)
+    }
+  }, [onLinkCreate, sourceId, task.id])
 
   function renderLinkPoint(endpoint: string) {
     if (isTaskResizing) return null
 
     return (
       <div
-        onMouseDown={onStartNewLink}
-        onMouseUp={onEndNewLink}
+        onMouseDown={endpoint === 'end' ? onStartNewLink : undefined}
+        onMouseUp={endpoint === 'start' ? onEndNewLink : undefined}
         className={`c-chart-bar-task-link-wrapper link-${endpoint}`}
       >
         <div className='c-chart-bar-task-link '>

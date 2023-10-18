@@ -29,7 +29,7 @@ export default function IconButton({ onClick, iconName, overflowItems, className
   const modalNode = useDomStore((state) => state.modalNode)
   const wrapperNode = useDomStore((state) => state.wrapperNode)
 
-  const handleClick = useCallback((event: MouseEvent) => {
+  const handleClick = useCallback((event: Event) => {
     const buttonWrapper = buttonWrapperRef.current
 
     if (!buttonWrapper?.contains(event.target as Node)) {
@@ -39,20 +39,30 @@ export default function IconButton({ onClick, iconName, overflowItems, className
 
   useEffect(() => {
     if (isOverflowOpen) {
-      document.addEventListener('click', handleClick)
+      document.addEventListener('mousedown', handleClick)
+      wrapperNode?.addEventListener('scroll', handleClick, { once: true })
     }
 
     return () => {
-      document.removeEventListener('click', handleClick)
+      document.removeEventListener('mousedown', handleClick)
+      wrapperNode?.removeEventListener('scroll', handleClick)
     }
-  }, [handleClick, isOverflowOpen])
+  }, [handleClick, isOverflowOpen, wrapperNode])
 
   function onButtonClick() {
     if (overflowItems) {
-      const { left: wrapperLeft = 0 } = wrapperNode?.getBoundingClientRect() ?? {}
-      const { left = 0, width = 0 } = buttonWrapperRef.current?.getBoundingClientRect() ?? {}
+      const { left: wrapperLeft = 0, top: wrapperTop = 0 } = wrapperNode?.getBoundingClientRect() ?? {}
+      const { right = 0, top = 0 } = buttonWrapperRef.current?.getBoundingClientRect() ?? {}
 
-      useDomStore.setState({ modalShift: [left + width + 5 - wrapperLeft, 0] })
+      const toBottom = top + 490 > window.innerHeight
+      const toRight = right + 220 > window.innerWidth
+
+      const modalPosition = {
+        ...(toBottom ? { bottom: 500 } : { top: top - wrapperTop }),
+        ...(toRight ? { right: 220 } : { left: right + 5 - wrapperLeft }),
+      }
+
+      useDomStore.setState({ modalShift: modalPosition })
 
       setIsOverflowOpen((prevState) => !prevState)
     }

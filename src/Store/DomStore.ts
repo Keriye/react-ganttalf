@@ -9,7 +9,7 @@ type DomState = {
   setHeaderNode: (node: DomState['headerNode']) => void
   modalNode: HTMLDivElement | null
   setModalNode: (node: DomState['modalNode']) => void
-  modalShift: [number, number]
+  modalShift: { left?: number; right?: number; top?: number; bottom?: number }
 }
 
 const useDomStore = create<DomState>()((set) => ({
@@ -21,7 +21,10 @@ const useDomStore = create<DomState>()((set) => ({
   setHeaderNode: (node: HTMLDivElement | null) => set({ headerNode: node }),
   modalNode: null,
   setModalNode: (node: HTMLDivElement | null) => set({ modalNode: node }),
-  modalShift: [0, 0],
+  modalShift: {
+    left: 0,
+    top: 0,
+  },
 }))
 
 export default useDomStore

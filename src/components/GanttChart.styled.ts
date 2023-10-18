@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const Wrapper = styled.div`
   display: flex;
@@ -33,9 +33,27 @@ export const ScrollWrapper = styled.div`
   }
 `
 
-export const ModalWrapper = styled.div<{ x: number; y: number }>`
+export const ModalWrapper = styled.div<{ left?: number; right?: number; top?: number; bottom?: number }>`
   position: absolute;
-  top: ${({ y }) => y}px;
-  left: ${({ x }) => x}px;
   z-index: 150;
+  ${({ top }) =>
+    top &&
+    css`
+      top: ${top}px;
+    `}
+  ${({ bottom }) =>
+    bottom &&
+    css`
+      bottom: ${bottom}px;
+    `}
+  ${({ left }) =>
+    left &&
+    css`
+      left: ${left}px;
+    `}
+  ${({ right }) =>
+    right &&
+    css`
+      right: ${right}px;
+    `}
 `

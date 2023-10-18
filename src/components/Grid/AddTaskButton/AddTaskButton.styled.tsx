@@ -4,10 +4,10 @@ export const Wrapper = styled.div<{ rowHeight: number }>`
   background: ${({ theme }) => theme.white};
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
   border-top: 1px solid ${({ theme }) => theme.neutralLight};
+  z-index: 111;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 111;
   position: sticky;
   width: 100%;
 
