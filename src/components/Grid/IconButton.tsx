@@ -39,12 +39,12 @@ export default function IconButton({ onClick, iconName, overflowItems, className
 
   useEffect(() => {
     if (isOverflowOpen) {
-      document.addEventListener('mousedown', handleClick)
+      document.addEventListener('click', handleClick)
       wrapperNode?.addEventListener('scroll', handleClick, { once: true })
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('click', handleClick)
       wrapperNode?.removeEventListener('scroll', handleClick)
     }
   }, [handleClick, isOverflowOpen, wrapperNode])
