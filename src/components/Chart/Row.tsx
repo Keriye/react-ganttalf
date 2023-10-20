@@ -47,12 +47,13 @@ function Row({ task }: IRowProps) {
   const daysFromStart = getDatesBetween({
     startDate: startDate as Date,
     endDate: task.startDate as Date,
-    includeStartDate: false,
+    includeEndDate: false,
   })
 
   const taskDays = getDatesBetween({
     startDate: task.startDate as Date,
     endDate: task.endDate as Date,
+    includeEndDate: false,
   })
 
   // handle task move

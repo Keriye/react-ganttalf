@@ -19,6 +19,7 @@ interface IConfigContextProps {
   rowHeight: number
   startDate: Date | string
   timeLineHeight: number
+  zoom?: number
 }
 
 type ColumnRenderer = {
@@ -30,9 +31,10 @@ export type GanttChartProps = {
   onTaskCreate?: (task: Partial<ITask>) => void
   onTaskAppend?: (task: Partial<ITask>, options?: { replace?: boolean }) => void
   onTaskSelect?: (task: ITask) => void
+  onTaskStatusChange?: (data: { value: boolean; taskId: string }) => void
   onTaskTitleChange?: (data: { value: string; taskId: string }) => void
   onTaskTimeChange?: (task: ITask, options: { start?: number; end: number }) => void
-  onTaskReorder?: (sourceId: string, targetId: string) => void
+  onTaskReorder?: (sourceId: string, targetId: string, mode?: 'before' | 'after') => void
   onLinkCreate?: (sourceId: string, targetId: string) => void
   config?: IConfig
   theme?: ITheme
@@ -52,6 +54,7 @@ const defaultConfig: IConfigContextProps = {
   rowHeight: 40,
   columnWidth: 36,
   timeLineHeight: 50,
+  zoom: 1,
 }
 
 const defaultTheme = {
@@ -86,6 +89,7 @@ export const ActionContext = React.createContext<
     | 'onTaskCreate'
     | 'onTaskAppend'
     | 'onTaskSelect'
+    | 'onTaskStatusChange'
     | 'onTaskTitleChange'
     | 'onTaskTimeChange'
     | 'onTaskReorder'
@@ -106,6 +110,7 @@ function GanttChart({
   onTaskCreate,
   onTaskAppend,
   onTaskSelect,
+  onTaskStatusChange,
   onTaskTitleChange,
   onTaskTimeChange,
   onTaskReorder,
@@ -128,7 +133,7 @@ function GanttChart({
 
   const virtualizer = useVirtualizer({
     count: tasks?.filter((t) => !t.collapsed)?.length,
-    getScrollElement: () => wrapperNode,
+    getScrollElement: () => (virtualization ? wrapperNode : null),
     estimateSize: () => rowHeight,
     overscan: 15,
   })
@@ -148,11 +153,15 @@ function GanttChart({
 
   useEffect(() => {
     const startDay = new Date(config.startDate).getDay()
-    const daysDelta = 14 + startDay - 1
+    const zoom = config.zoom ?? 1
+    const daysDelta = Math.floor(zoom * 14) + startDay - 1
+
+    const columnWidth = Math.floor((config?.columnWidth ?? defaultConfig.columnWidth) / zoom)
 
     setConfig({
       ...defaultConfig,
       ...config,
+      columnWidth,
       // startdate is config.startDate + ~10 days (first Monday)
       startDate: DateTime.fromJSDate(config.startDate as Date)
         .minus({ days: daysDelta })
@@ -175,6 +184,7 @@ function GanttChart({
           onTaskCreate,
           onTaskAppend,
           onTaskSelect,
+          onTaskStatusChange,
           onTaskTitleChange,
           onTaskTimeChange,
           onTaskReorder,

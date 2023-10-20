@@ -66,7 +66,7 @@ function Grid() {
   }
 
   return (
-    <SC.Wrapper ref={containerRef} isResizing={isResizing} totalHeight={totalHeight}>
+    <SC.Wrapper id='react-ganttalf-grid' ref={containerRef} isResizing={isResizing} totalHeight={totalHeight}>
       {virtualItems ? (
         <>
           <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />

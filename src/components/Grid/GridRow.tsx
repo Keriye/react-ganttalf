@@ -1,5 +1,5 @@
 import { useConfigStore, useTasksStore } from '../../Store'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 // import Avatar from './Avatar'
 import Checkbox from './Checkbox'
@@ -28,7 +28,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
 
-  const { columnsRenderer, columnsOrder, onTaskAppend, onTaskReorder } = useContext(ActionContext)
+  const { columnsRenderer, columnsOrder, onTaskAppend, onTaskReorder, onTaskStatusChange } = useContext(ActionContext)
 
   const { rowHeight } = config
 
@@ -141,9 +141,10 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     clearTimeout(openSubTasksRef.current as NodeJS.Timeout)
 
     const sourceId = event.dataTransfer.getData('sourceId')
+    const reorderMode = dragOverPosition === 'top' ? 'before' : dragOverPosition === 'bottom' ? 'after' : undefined
 
     if (sourceId) {
-      onTaskReorder?.(sourceId, task.id)
+      onTaskReorder?.(sourceId, task.id, reorderMode)
     }
 
     openSubTasksRef.current = null
@@ -181,6 +182,14 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   //     {(columnsRenderer?.assignee?.renderer ?? renderAssigneeColumnDefault)(task)}
   //   </div>
   // )
+
+  const handleOnStatusChange: (checked: boolean) => void = useCallback(
+    (checked) => {
+      onStatusChange(checked, task.id)
+      onTaskStatusChange?.({ taskId: task.id, value: !task.status })
+    },
+    [onStatusChange, onTaskStatusChange, task.id, task.status],
+  )
 
   const renderCustomColumns = () => {
     if (!columnsOrder) {
@@ -225,10 +234,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
           </div>
           {renderSortOrderColumn()}
         </div>
-        <Checkbox
-          onChange={(checked) => onStatusChange(checked, task.id)}
-          defaultChecked={task.status === TaskStatus.Completed}
-        />
+        <Checkbox onChange={handleOnStatusChange} defaultChecked={task.status === TaskStatus.Completed} />
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
         {/*{renderAssigneeColumn()}*/}
