@@ -54,11 +54,11 @@ export default function IconButton({ onClick, iconName, overflowItems, className
       const { left: wrapperLeft = 0, top: wrapperTop = 0 } = wrapperNode?.getBoundingClientRect() ?? {}
       const { right = 0, top = 0 } = buttonWrapperRef.current?.getBoundingClientRect() ?? {}
 
-      const toBottom = top + 490 > window.innerHeight
+      const toBottom = top + 180 > window.innerHeight
       const toRight = right + 220 > window.innerWidth
 
       const modalPosition = {
-        ...(toBottom ? { bottom: 500 } : { top: top - wrapperTop }),
+        ...(toBottom ? { bottom: 190 } : { top: top - wrapperTop }),
         ...(toRight ? { right: 220 } : { left: right + 5 - wrapperLeft }),
       }
 

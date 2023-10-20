@@ -25,7 +25,7 @@ export const DateMarking = styled.div<{
   text-align: left;
 `
 
-export const TimeLineDateRangeStyled = styled.div<{
+export const TimeLineDateRange = styled.div<{
   columnWidth: number
   daysFromStart: number
 }>`
@@ -33,39 +33,45 @@ export const TimeLineDateRangeStyled = styled.div<{
   left: ${({ daysFromStart, columnWidth }) => daysFromStart * columnWidth}px;
   bottom: 6px;
   background: ${({ theme }) => theme.white};
+`
 
-  .c-row-timeline-range {
-    font-size: 12px;
-    color: ${({ theme }) => theme.themePrimary};
-    font-weight: 600;
-    display: flex;
-    margin-left: 3px;
-    margin-right: 3px;
-    justify-content: space-between;
-  }
+export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount: number }>`
+  box-shadow: 0 2px 3px 0 rgb(0 0 0 / 10%);
 
-  .c-row-timeline-days {
-    box-shadow: 0 2px 3px 0 rgb(0 0 0 / 10%);
+  background: ${({ theme }) => theme.white};
+  border: 1px solid ${({ theme }) => theme.themePrimary};
+  width: ${({ columnWidth, columnCount }) => columnWidth * columnCount}px;
+  height: 22px;
 
-    background: ${({ theme }) => theme.white};
-    border: 1px solid ${({ theme }) => theme.themePrimary};
-    height: 22px;
+  border-radius: 3px;
+  display: flex;
+  flex: 0 0 auto;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
 
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-  }
-
-  .c-row-timeline-day {
-    width: ${({ columnWidth }) => columnWidth}px;
+  & > p {
     text-align: center;
     font-size: 12px;
-  }
+    flex: 1 1 ${({ columnWidth }) => columnWidth}px;
 
-  .c-row-timeline-day-end,
-  .c-row-timeline-day-start {
-    background: ${({ theme }) => theme.themePrimary};
-    color: ${({ theme }) => theme.white};
+    &:first-of-type,
+    &:last-of-type {
+      background: ${({ theme }) => theme.themePrimary};
+      color: ${({ theme }) => theme.white};
+    }
   }
+`
+export const TimeLineDaysInfo = styled.div`
+  font-size: 12px;
+  color: ${({ theme }) => theme.themePrimary};
+  font-weight: 600;
+  display: flex;
+  flex: 1 1 100%;
+  position: absolute;
+  top: -21px;
+  padding-left: 3px;
+  right: 3px;
+  width: 100%;
+  justify-content: space-between;
 `

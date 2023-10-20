@@ -32,6 +32,7 @@ export interface IConfig {
   rowHeight: number
   startDate: Date | string
   timeLineHeight: number
+  zoom?: number
 }
 
 export interface ITheme {

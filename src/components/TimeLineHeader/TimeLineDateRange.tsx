@@ -1,54 +1,47 @@
 import { DateTime } from 'luxon'
-import { TimeLineDateRangeStyled } from './TimeLineHeader.styled'
+import * as SC from './TimeLineHeader.styled'
 import { getDatesBetween } from '../../utils/helpers'
 import { useConfigStore } from '../../Store'
 
-interface ITimeLineDateRangeProps {
+type TimeLineDateRangeProps = {
   startDate: Date
   endDate: Date
 }
 
-export default function TimeLineDateRange({ startDate, endDate }: ITimeLineDateRangeProps) {
+export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRangeProps) {
   const config = useConfigStore((state) => state.config)
 
   const { columnWidth } = config
 
-  const taskDays = getDatesBetween({ startDate, endDate })
+  const taskDays = getDatesBetween({ startDate, endDate, includeEndDate: false })
 
   const daysFromStart = getDatesBetween({
     startDate: config.startDate as Date,
     endDate: startDate,
-    includeStartDate: false,
+    includeEndDate: false,
   }).length
 
   function renderDay(day: Date, index: number) {
-    let classNames = 'c-row-timeline-day'
+    const isCompact = columnWidth < 15
+    const isHidden = isCompact && index !== taskDays.length - 1 && !!(index % 2)
 
-    if (index === 0) {
-      classNames += ' c-row-timeline-day-start'
-    } else if (index === taskDays.length - 1) {
-      classNames += ' c-row-timeline-day-end'
-    }
-
-    return (
-      <div key={day.toString()} className={classNames}>
-        {DateTime.fromJSDate(day).day}
-      </div>
-    )
+    return <p key={day.toString()}>{!isHidden && DateTime.fromJSDate(day).day}</p>
   }
 
   return (
-    <TimeLineDateRangeStyled daysFromStart={daysFromStart} columnWidth={columnWidth || 36}>
-      <div className='c-row-timeline-range'>
-        <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>
-        {taskDays.length > 1 && (
-          <>
-            {taskDays.length > 2 && <div>{taskDays.length}</div>}
-            <div>{taskDays.length > 2 ? DateTime.fromJSDate(endDate).toFormat('LLL.') : taskDays.length}</div>
-          </>
-        )}
-      </div>
-      <div className='c-row-timeline-days'>{taskDays.map(renderDay)}</div>
-    </TimeLineDateRangeStyled>
+    <SC.TimeLineDateRange daysFromStart={daysFromStart} columnWidth={columnWidth || 36}>
+      <SC.TimeLineDaysWrapper columnWidth={columnWidth || 36} columnCount={taskDays.length}>
+        {taskDays.map(renderDay)}
+        <SC.TimeLineDaysInfo>
+          <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>
+          {taskDays.length > 1 && (
+            <>
+              {taskDays.length > 2 && <div>{taskDays.length}</div>}
+              <div>{taskDays.length > 2 ? DateTime.fromJSDate(endDate).toFormat('LLL.') : taskDays.length}</div>
+            </>
+          )}
+        </SC.TimeLineDaysInfo>
+      </SC.TimeLineDaysWrapper>
+    </SC.TimeLineDateRange>
   )
 }

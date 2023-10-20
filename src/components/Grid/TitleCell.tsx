@@ -7,6 +7,7 @@ import { useConfigStore, useTasksStore } from '../../Store'
 import { ActionContext } from '../GanttChart'
 import useTranslateStore from '../../Store/TranslateStore'
 import { getDatesBetween } from '../../utils/helpers'
+import useDomStore from '../../Store/DomStore'
 // import useDomStore from '../../Store/DomStore'
 
 interface ITitleCellProps {
@@ -17,13 +18,14 @@ interface ITitleCellProps {
 export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const [title, setTitle] = useState(task.title)
   const t = useTranslateStore((store) => store.t)
+  const wrapperNode = useDomStore((store) => store.wrapperNode)
 
-  const { onTaskSelect, onTaskTitleChange } = useContext(ActionContext)
+  const { onTaskSelect, onTaskTitleChange, onTaskStatusChange } = useContext(ActionContext)
 
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const deleteTask = useTasksStore((state) => state.deleteTask)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
-  const onSubtaskCreate = useTasksStore((state) => state.onSubtaskCreate)
+  // const onSubtaskCreate = useTasksStore((state) => state.onSubtaskCreate)
   const config = useConfigStore((state) => state.config)
 
   const { startDate, columnWidth } = config
@@ -59,22 +61,23 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
 
   const handleStatusChange = useCallback(() => {
     onStatusChange(!task.status, task.id)
-  }, [onStatusChange, task.id, task.status])
+    onTaskStatusChange?.({ taskId: task.id, value: !task.status })
+  }, [onStatusChange, onTaskStatusChange, task.id, task.status])
 
-  const handleSubtaskCreate = useCallback(() => {
-    onSubtaskCreate(task.id)
-  }, [onSubtaskCreate, task.id])
+  // const handleSubtaskCreate = useCallback(() => {
+  //   onSubtaskCreate(task.id)
+  // }, [onSubtaskCreate, task.id])
 
   const handleScrollToTask = useCallback(() => {
     if (!task.startDate) return
 
     const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
     // const ganttChart = document.querySelector(`div[class^=Chart-module_chart]`);
-    const ganttChart = document.querySelector('#react-ganttalf')
-    const scrollLeft = diff * columnWidth + 350
+    const gridNode = document.querySelector('#react-ganttalf-grid')
+    const scrollLeft = diff * columnWidth - (gridNode?.clientWidth ?? 350) - 80
 
-    ganttChart?.scrollTo(scrollLeft, ganttChart.scrollTop)
-  }, [columnWidth, startDate, task.startDate])
+    wrapperNode?.scrollTo(scrollLeft, wrapperNode.scrollTop)
+  }, [columnWidth, startDate, task.startDate, wrapperNode])
 
   const handleEnterPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -119,89 +122,89 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               text: t('menu.open.details'),
               onClick: handleTaskSelect,
             },
-            {
-              iconName: 'PaddingRight',
-              key: 'Subtusk',
-              text: t('menu.make.subtask'),
-              onClick: handleSubtaskCreate,
-            },
-            {
-              iconName: 'PaddingLeft',
-              key: 'Promote',
-              text: t('menu.promote.subtask'),
-              onClick: handleSubtaskCreate,
-            },
+            // {
+            //   iconName: 'PaddingRight',
+            //   key: 'Subtusk',
+            //   text: t('menu.make.subtask'),
+            //   onClick: handleSubtaskCreate,
+            // },
+            // {
+            //   iconName: 'PaddingLeft',
+            //   key: 'Promote',
+            //   text: t('menu.promote.subtask'),
+            //   onClick: handleSubtaskCreate,
+            // },
             { key: 'devider-1', type: 'divider' },
-            {
-              iconName: 'Cut',
-              key: 'Cut',
-              text: 'Aufgabe ausschneiden',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
-            {
-              iconName: 'Copy',
-              key: 'Copy',
-              text: 'Aufgabe kopieren',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
-            {
-              iconName: 'Paste',
-              key: 'Paste',
-              text: 'Aufgabe einfügen',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
-            {
-              iconName: 'Insert',
-              key: 'Insert',
-              text: 'Vorgang oben einfügen',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
+            // {
+            //   iconName: 'Cut',
+            //   key: 'Cut',
+            //   text: 'Aufgabe ausschneiden',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
+            // {
+            //   iconName: 'Copy',
+            //   key: 'Copy',
+            //   text: 'Aufgabe kopieren',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
+            // {
+            //   iconName: 'Paste',
+            //   key: 'Paste',
+            //   text: 'Aufgabe einfügen',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
+            // {
+            //   iconName: 'Insert',
+            //   key: 'Insert',
+            //   text: 'Vorgang oben einfügen',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
             {
               iconName: 'Delete',
               key: 'Delete',
               text: t('menu.delete.task'),
               onClick: handleTaskDelete,
             },
-            {
-              iconName: 'Link',
-              key: 'Link',
-              text: 'Link zu Vorgang kopieren',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
+            // {
+            //   iconName: 'Link',
+            //   key: 'Link',
+            //   text: 'Link zu Vorgang kopieren',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
             { key: 'devider-2', type: 'divider' },
-            {
-              iconName: 'DependencyAdd',
-              key: 'DependencyAdd',
-              text: 'Abhängigkeit hinzufügen',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
-            {
-              iconName: 'DependencyRemove',
-              key: 'DependencyRemove',
-              text: 'Abhängigkeit entfernen',
-              disabled: true,
-              onClick: () => {
-                console.log('Add to favorites')
-              },
-            },
+            // {
+            //   iconName: 'DependencyAdd',
+            //   key: 'DependencyAdd',
+            //   text: 'Abhängigkeit hinzufügen',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
+            // {
+            //   iconName: 'DependencyRemove',
+            //   key: 'DependencyRemove',
+            //   text: 'Abhängigkeit entfernen',
+            //   disabled: true,
+            //   onClick: () => {
+            //     console.log('Add to favorites')
+            //   },
+            // },
             {
               iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
               key: 'Status',
