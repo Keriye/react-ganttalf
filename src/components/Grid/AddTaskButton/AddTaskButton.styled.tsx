@@ -46,6 +46,11 @@ export const EditWrapper = styled.div<{ rowHeight: number }>`
   box-shadow: rgba(0, 0, 0, 0.133) 0 3.2px 7.2px 0, rgba(0, 0, 0, 0.11) 0 0.6px 1.8px 0;
 `
 
+export const EditLink = styled.a`
+  cursor: pointer;
+  display: contents;
+`
+
 export const StyledInput = styled.input`
   margin-left: 20px;
   padding: 9px 5px;
