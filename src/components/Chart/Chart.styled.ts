@@ -92,6 +92,7 @@ const TaskPosition = styled.div<{ daysFromStart: number; columnWidth: number }>`
 
 export const Task = styled(TaskPosition)<{
   rowHeight: number
+  columnWidth: number
   isParentTask: boolean
   daysLength: number
 }>`
@@ -99,9 +100,7 @@ export const Task = styled(TaskPosition)<{
   display: flex;
   /* transition: left 0.1s, width 0.1s; */
   align-items: center;
-  height: ${({ rowHeight }) => {
-    return rowHeight
-  }}px;
+  height: ${({ rowHeight }) => rowHeight}px;
   width: ${({ columnWidth, daysLength }) => columnWidth * daysLength}px;
 
   &:hover {

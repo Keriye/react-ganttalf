@@ -56,6 +56,13 @@ function Row({ task }: IRowProps) {
     includeEndDate: false,
   })
 
+  useEffect(() => {
+    if (taskRef.current) {
+      taskRef.current.style.left = `${daysFromStart.length * columnWidth}px`
+      taskRef.current.style.width = `${taskDays.length * columnWidth}px`
+    }
+  }, [columnWidth])
+
   // handle task move
   useEffect(() => {
     const leftPosition = daysFromStart.length * columnWidth
