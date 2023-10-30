@@ -153,15 +153,12 @@ function GanttChart({
 
   useEffect(() => {
     const startDay = new Date(config.startDate).getDay()
-    const zoom = config.zoom ?? 1
-    const daysDelta = Math.floor(zoom * 14) + startDay - 1
-
-    const columnWidth = Math.floor((config?.columnWidth ?? defaultConfig.columnWidth) / zoom)
+    const weeks = Math.round(350 / ((config?.columnWidth ?? 10) * 7) + 0.5)
+    const daysDelta = Math.floor(weeks * 7) + startDay - 1
 
     setConfig({
       ...defaultConfig,
       ...config,
-      columnWidth,
       // startdate is config.startDate + ~10 days (first Monday)
       startDate: DateTime.fromJSDate(config.startDate as Date)
         .minus({ days: daysDelta })

@@ -12,6 +12,22 @@ export const ChartContainer = styled.div`
   position: relative;
 `
 
+export const ResizeEdge = styled.div<{ endpoint: 'start' | 'end' }>`
+  cursor: ew-resize;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  ${({ endpoint }) =>
+    endpoint === 'start'
+      ? css`
+          left: 0;
+        `
+      : css`
+          right: 0;
+        `}
+`
+
 export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
   position: absolute;
   width: 1px;
@@ -34,10 +50,12 @@ export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
 
 export const RowStyled = styled.div<{ type: number; rowHeight: number; segmentWidth: number; isParentTask: boolean }>`
   width: 100%;
-  ${({ theme, segmentWidth }) => css`
-    background: left / ${segmentWidth}px repeat
-      linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
-  `}
+  ${({ theme, segmentWidth }) =>
+    segmentWidth > 20 &&
+    css`
+      background: left / ${segmentWidth}px repeat
+        linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
+    `}
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
 
   &:hover {
@@ -203,13 +221,6 @@ export const Task = styled(TaskPosition)<{
     margin: 0 4px;
   }
 
-  .c-chart-bar-task-draggable-indicator-wrapper {
-    cursor: ew-resize;
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
   .c-chart-bar-task-connector-point {
     height: 1px;
     width: 1px;
@@ -356,13 +367,6 @@ export const MileStone = styled(TaskPosition)<{
     background: ${({ theme }) => theme.themePrimary};
     height: ${({ rowHeight }) => rowHeight * 0.35}px;
     margin: 0 4px;
-  }
-
-  .c-chart-bar-task-draggable-indicator-wrapper {
-    cursor: ew-resize;
-    height: 100%;
-    display: flex;
-    align-items: center;
   }
 
   .c-chart-bar-task-connector-point {
