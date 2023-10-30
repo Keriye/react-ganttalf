@@ -41,9 +41,11 @@ export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount
 
   background: ${({ theme }) => theme.white};
   border: 1px solid ${({ theme }) => theme.themePrimary};
-  width: ${({ columnWidth, columnCount }) => columnWidth * columnCount}px;
-  min-width: ${({ normalizedCount, columnCount }) =>
-    normalizedCount === 2 && normalizedCount !== columnCount ? 28 : normalizedCount === 2 ? 20 : 14}px;
+  width: ${({ columnWidth, columnCount, normalizedCount }) =>
+    Math.max(
+      columnWidth * columnCount,
+      normalizedCount === 2 && normalizedCount !== columnCount ? 28 : normalizedCount === 2 ? 20 : 14,
+    )}px;
   height: 22px;
 
   border-radius: 3px;
