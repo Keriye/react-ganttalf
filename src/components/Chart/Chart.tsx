@@ -81,11 +81,11 @@ function Chart() {
       <SC.ChartWrapper ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
         <SC.TodayIndicator indicatorPosition={todayIndicatorPosition} />
         <SC.ChartContainer id='react-ganttalf-tasks-container'>
-          <Connectors />
+          <Connectors tasks={tasksToDisplay} />
           {virtualItems && <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
-          {tasksToDisplay.map((task) => {
-            return <Row key={task.id} task={task} />
-          })}
+          {tasksToDisplay.map((task) => (
+            <Row key={task.id} task={task} />
+          ))}
         </SC.ChartContainer>
       </SC.ChartWrapper>
     </>

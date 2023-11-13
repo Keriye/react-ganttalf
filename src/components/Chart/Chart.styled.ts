@@ -12,6 +12,29 @@ export const ChartContainer = styled.div`
   position: relative;
 `
 
+export const ResizeEdge = styled.div<{ endpoint: 'start' | 'end'; external: boolean }>`
+  cursor: ew-resize;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  ${({ endpoint, external }) =>
+    endpoint === 'start'
+      ? css`
+          left: ${external ? '-6px' : 0};
+        `
+      : css`
+          right: ${external ? '-6px' : 0};
+        `}
+  ${({ external }) =>
+    external &&
+    css`
+      .c-chart-bar-task-draggable-indicator {
+        margin: 0;
+      }
+    `}
+`
+
 export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
   position: absolute;
   width: 1px;
@@ -34,10 +57,12 @@ export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
 
 export const RowStyled = styled.div<{ type: number; rowHeight: number; segmentWidth: number; isParentTask: boolean }>`
   width: 100%;
-  ${({ theme, segmentWidth }) => css`
-    background: left / ${segmentWidth}px repeat
-      linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
-  `}
+  ${({ theme, segmentWidth }) =>
+    segmentWidth > 20 &&
+    css`
+      background: left / ${segmentWidth}px repeat
+        linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
+    `}
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
 
   &:hover {
@@ -74,6 +99,7 @@ const TaskPosition = styled.div<{ daysFromStart: number; columnWidth: number }>`
 
 export const Task = styled(TaskPosition)<{
   rowHeight: number
+  columnWidth: number
   isParentTask: boolean
   daysLength: number
 }>`
@@ -81,9 +107,7 @@ export const Task = styled(TaskPosition)<{
   display: flex;
   /* transition: left 0.1s, width 0.1s; */
   align-items: center;
-  height: ${({ rowHeight }) => {
-    return rowHeight
-  }}px;
+  height: ${({ rowHeight }) => rowHeight}px;
   width: ${({ columnWidth, daysLength }) => columnWidth * daysLength}px;
 
   &:hover {
@@ -203,13 +227,6 @@ export const Task = styled(TaskPosition)<{
     margin: 0 4px;
   }
 
-  .c-chart-bar-task-draggable-indicator-wrapper {
-    cursor: ew-resize;
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
   .c-chart-bar-task-connector-point {
     height: 1px;
     width: 1px;
@@ -269,7 +286,7 @@ export const MileStone = styled(TaskPosition)<{
     align-items: center;
     display: flex;
     min-height: ${({ rowHeight }) => rowHeight * 0.7}px;
-    min-width: 26px;
+    min-width: 18px;
     position: absolute;
 
     &:hover {
@@ -325,15 +342,12 @@ export const MileStone = styled(TaskPosition)<{
       return theme.themeLight
     }};
     transform: rotate(45deg);
-    height: ${({ rowHeight }) => {
-      return rowHeight * 0.6
-    }}px;
+    height: ${({ rowHeight }) => rowHeight * 0.5}px;
     border-radius: 3px;
-    width: ${({ rowHeight }) => {
-      return rowHeight * 0.6
-    }}px;
+    width: ${({ rowHeight }) => rowHeight * 0.5}px;
     border: 1px solid ${({ theme }) => theme.themePrimary};
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: space-between;
   }
@@ -356,13 +370,6 @@ export const MileStone = styled(TaskPosition)<{
     background: ${({ theme }) => theme.themePrimary};
     height: ${({ rowHeight }) => rowHeight * 0.35}px;
     margin: 0 4px;
-  }
-
-  .c-chart-bar-task-draggable-indicator-wrapper {
-    cursor: ew-resize;
-    height: 100%;
-    display: flex;
-    align-items: center;
   }
 
   .c-chart-bar-task-connector-point {

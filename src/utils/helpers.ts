@@ -1,4 +1,4 @@
-import { DateTime, DurationLikeObject, Interval } from 'luxon'
+import { DateTime, DurationLike, DurationLikeObject, Interval } from 'luxon'
 
 import { ITask } from '../types'
 import useTranslateStore from '../Store/TranslateStore'
@@ -35,11 +35,13 @@ export function getDatesBetween({
   endDate,
   includeStartDate = true,
   includeEndDate = true,
+  splitByValue = { days: 1 },
 }: {
   startDate?: Date | string
   endDate?: Date | string
   includeStartDate?: boolean
   includeEndDate?: boolean
+  splitByValue?: DurationLike
 }): Date[] {
   if (!startDate || !endDate) return []
 
@@ -58,7 +60,7 @@ export function getDatesBetween({
   const dateInterval = Interval.fromDateTimes(start, end)
 
   // create an array of days between start and end date
-  return dateInterval.splitBy({ days: 1 }).map(({ start }) => start?.toJSDate() as Date)
+  return dateInterval.splitBy(splitByValue).map(({ start }) => start?.toJSDate() as Date)
 }
 
 export function addDateTime(date: Date, { days = 0, hours = 0, minutes = 0 }: DurationLikeObject): Date {

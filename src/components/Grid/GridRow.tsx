@@ -1,5 +1,5 @@
 import { useConfigStore, useTasksStore } from '../../Store'
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 
 // import Avatar from './Avatar'
 import Checkbox from './Checkbox'
@@ -37,16 +37,18 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
 
   const [dragOverPosition, setDragOverPosition] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (task?.id?.startsWith?.('temp')) {
-      rowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-    }
-  }, [task.id])
+  // useEffect(() => {
+  //   if (task?.id?.startsWith?.('temp')) {
+  //     rowRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  //   }
+  // }, [task.id])
 
   function onDragStart(event: React.DragEvent<HTMLDivElement>) {
     const element = document.getElementById('c-grid-row-' + task.id)
 
     if (!element) return
+
+    !task.collapsed && toggleCollapse(task.id)
 
     event.dataTransfer.setData('sourceId', task.id)
     event.dataTransfer.setDragImage(element, 10, 10)
@@ -120,17 +122,16 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   }
 
   function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
-    const { clientY, clientX } = event
+    setDragOverPosition(null)
 
+    const { clientY, clientX } = event
     if (!rowRef.current) return
 
     const { top, left, height, width } = rowRef.current.getBoundingClientRect()
 
     const isOverRow = clientY > top && clientY < top + height - 3 && clientX > left && clientX < left + width
-
     if (isOverRow) return
 
-    setDragOverPosition(null)
     clearTimeout(openSubTasksRef.current as NodeJS.Timeout)
 
     openSubTasksRef.current = null
@@ -143,7 +144,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     const sourceId = event.dataTransfer.getData('sourceId')
     const reorderMode = dragOverPosition === 'top' ? 'before' : dragOverPosition === 'bottom' ? 'after' : undefined
 
-    if (sourceId) {
+    if (sourceId && reorderMode) {
       onTaskReorder?.(sourceId, task.id, reorderMode)
     }
 

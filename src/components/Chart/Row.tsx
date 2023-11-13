@@ -1,4 +1,4 @@
-import { MileStone, RowStyled, Task } from './Chart.styled'
+import * as SC from './Chart.styled'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
@@ -55,6 +55,13 @@ function Row({ task }: IRowProps) {
     endDate: task.endDate as Date,
     includeEndDate: false,
   })
+
+  useEffect(() => {
+    if (taskRef.current) {
+      taskRef.current.style.left = `${daysFromStart.length * columnWidth}px`
+      taskRef.current.style.width = `${taskDays.length * columnWidth}px`
+    }
+  }, [columnWidth])
 
   // handle task move
   useEffect(() => {
@@ -237,12 +244,14 @@ function Row({ task }: IRowProps) {
     if (isTaskResizing) return null
 
     return (
-      <div
+      <SC.ResizeEdge
         onMouseDown={(event) => getStartTaskResizeHandler(event, endpoint)}
         className='c-chart-bar-task-draggable-indicator-wrapper'
+        endpoint={endpoint}
+        external={taskDays.length * columnWidth < 16}
       >
         <div className='c-chart-bar-task-draggable-indicator' />
-      </div>
+      </SC.ResizeEdge>
     )
   }
 
@@ -296,7 +305,7 @@ function Row({ task }: IRowProps) {
   const renderTask = () => {
     if (task.type === 2) {
       return (
-        <MileStone
+        <SC.MileStone
           isParentTask={isParentTask}
           ref={taskRef}
           id={'task-bar-' + task.id}
@@ -310,12 +319,12 @@ function Row({ task }: IRowProps) {
             className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}
           ></div>
           {renderLinkPoint('end')}
-        </MileStone>
+        </SC.MileStone>
       )
     }
 
     return (
-      <Task
+      <SC.Task
         isParentTask={isParentTask}
         ref={taskRef}
         id={'task-bar-' + task.id}
@@ -336,7 +345,7 @@ function Row({ task }: IRowProps) {
         </div>
         {renderConnectorPoint('end')}
         {renderLinkPoint('end')}
-      </Task>
+      </SC.Task>
     )
   }
 
@@ -376,7 +385,7 @@ function Row({ task }: IRowProps) {
   }
 
   return (
-    <RowStyled
+    <SC.RowStyled
       isParentTask={isParentTask}
       ref={rowRef}
       type={task.type || 1}
@@ -389,7 +398,7 @@ function Row({ task }: IRowProps) {
       {displayConnector && <NewLinkConnector task={task} />}
       {renderTaskDateRange()}
       {renderTask()}
-    </RowStyled>
+    </SC.RowStyled>
   )
 }
 

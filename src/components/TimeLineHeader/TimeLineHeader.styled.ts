@@ -23,6 +23,7 @@ export const DateMarking = styled.div<{
   left: ${({ columnWidth, index }) => index * columnWidth}px;
   position: absolute;
   text-align: left;
+  white-space: nowrap;
 `
 
 export const TimeLineDateRange = styled.div<{
@@ -35,12 +36,16 @@ export const TimeLineDateRange = styled.div<{
   background: ${({ theme }) => theme.white};
 `
 
-export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount: number }>`
+export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount: number; normalizedCount: number }>`
   box-shadow: 0 2px 3px 0 rgb(0 0 0 / 10%);
 
   background: ${({ theme }) => theme.white};
   border: 1px solid ${({ theme }) => theme.themePrimary};
-  width: ${({ columnWidth, columnCount }) => columnWidth * columnCount}px;
+  width: ${({ columnWidth, columnCount, normalizedCount }) =>
+    Math.max(
+      columnWidth * columnCount,
+      normalizedCount === 2 && normalizedCount !== columnCount ? 28 : normalizedCount === 2 ? 20 : 14,
+    )}px;
   height: 22px;
 
   border-radius: 3px;
@@ -49,6 +54,8 @@ export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount
   position: relative;
   align-items: center;
   justify-content: space-between;
+
+  gap: ${({ normalizedCount, columnCount }) => (normalizedCount === 2 && normalizedCount !== columnCount ? 4 : 0)}px;
 
   & > p {
     text-align: center;
@@ -63,15 +70,23 @@ export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount
   }
 `
 export const TimeLineDaysInfo = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.themePrimary};
-  font-weight: 600;
-  display: flex;
-  flex: 1 1 100%;
   position: absolute;
-  top: -21px;
-  padding-left: 3px;
-  right: 3px;
+  display: flex;
   width: 100%;
-  justify-content: space-between;
+  height: 100%;
+  top: -104%;
+
+  & > div {
+    display: flex;
+    min-width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.themePrimary};
+  }
 `

@@ -1,17 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-interface IResizeObserverProps {
+type UseResizeObserverArgs = {
   taskElement: React.MutableRefObject<HTMLElement | null>
   rowHeight: number
   startElement?: boolean
+  isFlat?: boolean
 }
 
 export default function useResizeObserver({
   taskElement,
   rowHeight,
   startElement,
-}: IResizeObserverProps): { x: number; y: number } | null {
+  isFlat,
+}: UseResizeObserverArgs): { x: number; y: number } | null {
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
 
   const getCoords = useCallback(
@@ -51,7 +53,7 @@ export default function useResizeObserver({
       const positions = getCoords(el)
       const _coords = {
         x: startElement ? positions.right : positions.left,
-        y: positions.top,
+        y: isFlat ? positions.top : positions.top + 0.08 * rowHeight * (startElement ? 1 : -1),
       }
 
       setCoords(_coords)

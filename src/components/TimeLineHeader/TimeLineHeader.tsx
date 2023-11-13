@@ -3,6 +3,13 @@ import * as SC from './TimeLineHeader.styled'
 import { DateTime } from 'luxon'
 import { useConfigStore } from '../../Store'
 import useDomStore from '../../Store/DomStore'
+import { getDatesBetween } from '../../utils/helpers'
+
+enum Period {
+  Months = 'months',
+  Days = 'days',
+  Weeks = 'weeks',
+}
 
 type TimeLineHeaderProps = {
   // startDate: Date
@@ -10,33 +17,79 @@ type TimeLineHeaderProps = {
   days: Date[] | null
 }
 
+const getPeriodData = (columnWidth: number): { period: Period; range: number; format: string } => {
+  if (columnWidth === 1) {
+    return {
+      period: Period.Weeks,
+      range: 12,
+      format: 'LLL. yyyy',
+    }
+  }
+
+  if (columnWidth === 2) {
+    return {
+      period: Period.Weeks,
+      range: 8,
+      format: 'LLL. yyyy',
+    }
+  }
+
+  if (columnWidth < 10) {
+    return {
+      period: Period.Months,
+      range: 1,
+      format: 'LLL.',
+    }
+  }
+
+  if (columnWidth < 20) {
+    return {
+      period: Period.Weeks,
+      range: 3,
+      format: 'LLL. dd',
+    }
+  }
+
+  if (columnWidth < 30) {
+    return {
+      period: Period.Weeks,
+      range: 2,
+      format: 'LLL. dd',
+    }
+  }
+
+  return {
+    period: Period.Weeks,
+    range: 1,
+    format: 'LLL. dd',
+  }
+}
+
 function TimeLineHeader({ days }: TimeLineHeaderProps) {
   const config = useConfigStore((state) => state.config)
   const setHeaderNodeRef = useDomStore((state) => state.setHeaderNode)
 
-  // const [days, setDays] = useState<Date[] | null>(null)
+  const { columnWidth, startDate, endDate } = config
 
-  const { columnWidth } = config
+  const { period, range, format } = getPeriodData(columnWidth)
 
-  // useEffect(() => {
-  //   if (startDate && endDate) {
-  //     const _days = getDatesBetween({ startDate, endDate })
-  //
-  //     setDays(_days)
-  //   }
-  // }, [endDate, startDate])
+  const periods = getDatesBetween({
+    startDate,
+    endDate,
+    splitByValue: { [period]: range },
+  })
 
   function renderDates() {
-    if (!days) return null
+    if (!periods) return null
 
-    return days.map((day, index) => {
-      if (day.getDay() !== 1) return null
+    const periodWidth = Math.round(range * columnWidth * (period === Period.Months ? 30.4 : 7)) ?? 36
 
+    return periods.map((day, index) => {
       const date = new Date(day)
-      const dateString = DateTime.fromJSDate(date).toFormat('LLL. dd')
+      const dateString = DateTime.fromJSDate(date).toFormat(format)
 
       return (
-        <SC.DateMarking index={index} columnWidth={columnWidth || 36} key={dateString}>
+        <SC.DateMarking index={index} columnWidth={periodWidth} key={date.toString()}>
           {dateString}
         </SC.DateMarking>
       )

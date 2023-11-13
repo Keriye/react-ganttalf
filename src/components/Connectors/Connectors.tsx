@@ -1,45 +1,76 @@
-import { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import Connector from './Connector'
 import { ConnectorsStyled } from './Connectors.styled'
-import { useTasksStore } from '../../Store'
-import useVirtualizationStore from '../../Store/VirtualizationStore'
+import { ITask } from '../../types'
+
+type ConnectorsProps = {
+  tasks: ITask[]
+}
 
 interface IConnector {
   taskId: string
   successor: string
   key: string
+  hiddenItems?: number
+  flatStart?: boolean
+  flatEnd?: boolean
 }
 
-function Connectors() {
-  const tasks = useTasksStore((state) => state.tasks)
-  const [connectors, setConnectors] = useState<IConnector[]>([])
-  const virtualItems = useVirtualizationStore((state) => state.virtualItems)
+const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
+  const connectors = useMemo(() => {
+    if (!tasks?.length) return []
 
-  useEffect(() => {
-    const visibleTasks = virtualItems ? virtualItems.map(({ index }) => tasks[index]) : tasks
+    return tasks.flatMap((task) => {
+      const { successors } = task
 
-    if (visibleTasks?.length) {
-      const _connectors = visibleTasks.flatMap((task) => {
-        const { successors } = task
+      if (!successors?.length) return []
 
-        if (!successors?.length) return []
+      let amountOfHiddenSuccessors = 0
 
-        return successors.map((successor) => {
-          return {
-            taskId: task.id,
-            successor,
-            key: `${task.id}-${successor}-${Math.random()}`,
-          }
-        })
+      const successorConnetions = successors.map((successor) => {
+        const successorTask = tasks.find(({ id }) => id === successor)
+
+        if (!successorTask) {
+          amountOfHiddenSuccessors++
+        }
+
+        return {
+          taskId: task.id,
+          flatStart: task.type === 2 || !!task.subTaskIds?.length,
+          flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
+          successor,
+          key: `${task.id}-${successor}-${Math.random()}`,
+        }
       })
 
-      setConnectors(_connectors)
-    }
-  }, [tasks, virtualItems])
+      return amountOfHiddenSuccessors
+        ? [
+            ...successorConnetions,
+            {
+              taskId: task.id,
+              flatStart: true,
+              flatEnd: true,
+              hiddenItems: amountOfHiddenSuccessors,
+              successor: 'hidden',
+              key: `${task.id}-hidden-${Math.random()}`,
+            },
+          ]
+        : successorConnetions
+    })
+  }, [tasks])
 
-  function renderConnector(connector: IConnector) {
-    return <Connector key={connector.key} startId={connector.taskId} endId={connector.successor} />
+  const renderConnector = (connector: IConnector) => {
+    return (
+      <Connector
+        key={connector.key}
+        startId={connector.taskId}
+        endId={connector.successor}
+        hiddenItems={connector.hiddenItems}
+        flatStart={connector.flatStart}
+        flatEnd={connector.flatEnd}
+      />
+    )
   }
 
   if (!connectors?.length) return null

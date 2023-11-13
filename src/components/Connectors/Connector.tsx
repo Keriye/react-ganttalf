@@ -7,14 +7,18 @@ import { useConfigStore } from '../../Store'
 import useResizeObserver from './useResizeObserver'
 import { useTheme } from 'styled-components'
 
-interface IConnectorProps {
+type ConnectorProps = {
   startId: string
   endId?: string
   mousePosition?: { x: number; y: number }
+  hiddenItems?: number
+  flatStart?: boolean
+  flatEnd?: boolean
 }
 
-export default function Connector({ startId, endId, mousePosition }: IConnectorProps) {
+export default function Connector({ startId, endId, mousePosition, hiddenItems, flatStart, flatEnd }: ConnectorProps) {
   const config = useConfigStore((state) => state.config)
+  const isCommon = !hiddenItems && !mousePosition
 
   const element1 = useRef<HTMLElement | null>(null)
   const element2 = useRef<HTMLElement | null>(null)
@@ -24,15 +28,15 @@ export default function Connector({ startId, endId, mousePosition }: IConnectorP
   const [initialized, setInitialized] = useState(false)
   const { rowHeight } = config
 
-  const coordsStart = useResizeObserver({ taskElement: element1, rowHeight, startElement: true })
-  const coordsEnd = useResizeObserver({ taskElement: element2, rowHeight, startElement: false })
+  const coordsStart = useResizeObserver({ taskElement: element1, rowHeight, startElement: true, isFlat: flatStart })
+  const coordsEnd = useResizeObserver({ taskElement: element2, rowHeight, startElement: false, isFlat: flatEnd })
 
   useLayoutEffect(() => {
     if (!initialized) {
       const el1 = document.getElementById('task-bar-' + startId)
       const el2 = document.getElementById('task-bar-' + endId)
 
-      if ((el1 && el2) || (el1 && mousePosition)) {
+      if ((el1 && el2) || (el1 && !isCommon)) {
         element1.current = el1
 
         if (el2) {
@@ -42,31 +46,40 @@ export default function Connector({ startId, endId, mousePosition }: IConnectorP
 
       setInitialized(true)
     }
-  }, [initialized, startId, endId, mousePosition])
+  }, [initialized, startId, endId, isCommon])
 
   if (!initialized) return null
 
-  if (!mousePosition && (!element1.current || !element2.current)) return null
+  if (isCommon && (!element1.current || !element2.current)) return null
 
-  if (!mousePosition && (!coordsEnd || !coordsStart)) return null
+  if (isCommon && (!coordsEnd || !coordsStart)) return null
 
-  if (mousePosition && !coordsStart) return null
+  if (!isCommon && !coordsStart) return null
 
   if (!coordsStart) return null
 
+  const endPoint = (coordsEnd || mousePosition || { ...coordsStart, x: coordsStart.x + 40 }) as { x: number; y: number }
+
   return (
-    <NarrowSConnector
-      stroke={theme.neutralSecondaryAlt}
-      strokeWidth={1}
-      endPoint={(coordsEnd || mousePosition) as { x: number; y: number }}
-      startId={startId}
-      endId={endId}
-      startPoint={coordsStart}
-      roundCorner={true}
-      config={config}
-      endArrow={true}
-      arrowSize={5}
-    />
+    <>
+      <NarrowSConnector
+        stroke={theme.neutralSecondaryAlt}
+        strokeWidth={1}
+        endPoint={endPoint}
+        startId={startId}
+        endId={endId}
+        startPoint={coordsStart}
+        roundCorner={true}
+        config={config}
+        endArrow={true}
+        arrowSize={5}
+      />
+      {!!hiddenItems && (
+        <text x={endPoint.x + 6} y={endPoint.y + 4}>
+          +{hiddenItems}
+        </text>
+      )}
+    </>
   )
 }
 
