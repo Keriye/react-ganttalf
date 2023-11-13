@@ -70,15 +70,23 @@ export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount
   }
 `
 export const TimeLineDaysInfo = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.themePrimary};
-  font-weight: 600;
-  display: flex;
-  flex: 1 1 auto;
   position: absolute;
-  top: -21px;
-  left: 50%;
-  transform: translateX(-50%);
+  display: flex;
   width: 100%;
-  justify-content: space-between;
+  height: 100%;
+  top: -104%;
+
+  & > div {
+    display: flex;
+    min-width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.themePrimary};
+  }
 `

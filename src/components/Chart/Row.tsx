@@ -248,6 +248,7 @@ function Row({ task }: IRowProps) {
         onMouseDown={(event) => getStartTaskResizeHandler(event, endpoint)}
         className='c-chart-bar-task-draggable-indicator-wrapper'
         endpoint={endpoint}
+        external={taskDays.length * columnWidth < 16}
       >
         <div className='c-chart-bar-task-draggable-indicator' />
       </SC.ResizeEdge>

@@ -60,13 +60,15 @@ export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRa
       >
         {normalizedTaskDays.map(renderDay)}
         <SC.TimeLineDaysInfo>
-          <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>
-          {taskDaysLength > 1 && (
-            <>
-              {taskDaysLength > 2 && <div>{taskDaysLength}</div>}
-              <div>{taskDaysLength > 2 ? DateTime.fromJSDate(endDate).toFormat('LLL.') : taskDaysLength}</div>
-            </>
-          )}
+          <div>
+            <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>
+            {taskDaysLength > 1 && (
+              <>
+                {taskDaysLength > 2 && <div>{taskDaysLength}</div>}
+                <div>{taskDaysLength > 2 ? DateTime.fromJSDate(endDate).toFormat('LLL.') : taskDaysLength}</div>
+              </>
+            )}
+          </div>
         </SC.TimeLineDaysInfo>
       </SC.TimeLineDaysWrapper>
     </SC.TimeLineDateRange>
