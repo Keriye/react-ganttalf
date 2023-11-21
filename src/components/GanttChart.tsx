@@ -28,11 +28,13 @@ type ColumnRenderer = {
 
 export type GanttChartProps = {
   onTaskDatesChange?: () => void
-  onTaskCreate?: (task: Partial<ITask>) => void
+  onTaskCreate?: (task: Partial<ITask>) => Promise<boolean>
+  onTaskDelete?: (task: Partial<ITask>) => void
+  onSubtaskCreate?: (task: Partial<ITask>) => void
   onTaskAppend?: (task: Partial<ITask>, options?: { replace?: boolean }) => void
   onTaskSelect?: (task: ITask) => void
   onTaskStatusChange?: (data: { value: boolean; taskId: string }) => void
-  onTaskTitleChange?: (data: { value: string; taskId: string }) => void
+  onTaskTitleChange?: (data: { value: string; taskId: string }) => Promise<boolean>
   onTaskTimeChange?: (task: ITask, options: { start?: number; end: number }) => void
   onTaskReorder?: (sourceId: string, targetId: string, mode?: 'before' | 'after') => void
   onLinkCreate?: (sourceId: string, targetId: string) => void
@@ -87,12 +89,14 @@ export const ActionContext = React.createContext<
   Pick<
     GanttChartProps,
     | 'onTaskCreate'
+    | 'onTaskDelete'
     | 'onTaskAppend'
     | 'onTaskSelect'
     | 'onTaskStatusChange'
     | 'onTaskTitleChange'
     | 'onTaskTimeChange'
     | 'onTaskReorder'
+    | 'onSubtaskCreate'
     | 'onLinkCreate'
     | 'columnsRenderer'
     | 'columnsOrder'
@@ -108,12 +112,14 @@ function GanttChart({
   tasks: initTasks = [],
   translations,
   onTaskCreate,
+  onTaskDelete,
   onTaskAppend,
   onTaskSelect,
   onTaskStatusChange,
   onTaskTitleChange,
   onTaskTimeChange,
   onTaskReorder,
+  onSubtaskCreate,
   onLinkCreate,
   columnsRenderer,
   columnsOrder,
@@ -179,12 +185,14 @@ function GanttChart({
       <ActionContext.Provider
         value={{
           onTaskCreate,
+          onTaskDelete,
           onTaskAppend,
           onTaskSelect,
           onTaskStatusChange,
           onTaskTitleChange,
           onTaskTimeChange,
           onTaskReorder,
+          onSubtaskCreate,
           onLinkCreate,
           columnsRenderer,
           columnsOrder,

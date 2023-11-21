@@ -2,8 +2,15 @@ import { ITask } from '../types'
 import { create } from 'zustand'
 import { getTemplatedTask } from '../utils/helpers'
 
-interface ITasksState {
+type TasksStore = {
   tasks: ITask[]
+  interaction: Record<
+    string,
+    {
+      expanded?: boolean
+      isLoading?: boolean
+    }
+  >
   setTasks: (tasks: ITask[]) => void
   addTask: (
     task: Partial<ITask>,
@@ -14,16 +21,30 @@ interface ITasksState {
   ) => void
   updateTask: (task: ITask) => void
   deleteTask: (id: string) => void
-  toggleCollapse: (id: string) => void
+  toggleCollapse: (id: string, value?: boolean) => void
+  toggleLoading: (id: string, value?: boolean) => void
   onStatusChange: (checked: boolean, id: string) => void
   onTaskDateChange: (id: string, newDates: { startDate?: Date | string; endDate?: Date | string }) => void
   onSubtaskCreate: (id: string) => void
   onSubtaskPromote: (id: string) => void
 }
 
-const useTasksStore = create<ITasksState>()((set) => ({
+const useTasksStore = create<TasksStore>()((set) => ({
   tasks: [],
-  setTasks: (tasks) => set(() => ({ tasks })),
+  interaction: {},
+  setTasks: (tasks) =>
+    set(({ interaction }) => {
+      const updatedInteraction: TasksStore['interaction'] = {}
+
+      tasks.forEach(({ id }) => {
+        updatedInteraction[id] = { ...interaction[id], expanded: interaction[id]?.expanded ?? false }
+      })
+
+      return {
+        tasks,
+        interaction: updatedInteraction,
+      }
+    }),
   addTask: (taskData, options) =>
     set(({ tasks }) => {
       const { sourceId, position = 'after' } = options ?? {}
@@ -71,16 +92,40 @@ const useTasksStore = create<ITasksState>()((set) => ({
     set(({ tasks }) => ({
       tasks: tasks.filter((t) => t.id !== id),
     })),
-  toggleCollapse: (id) =>
-    set(({ tasks }) => {
+  // toggleCollapse: (id) =>
+  //   set(({ tasks }) => {
+  //     return {
+  //       tasks: tasks.map((t) => {
+  //         if (t.id === id) {
+  //           return { ...t, collapsed: !t.collapsed }
+  //         }
+  //
+  //         return t
+  //       }),
+  //     }
+  //   }),
+  toggleCollapse: (id, value) =>
+    set(({ interaction }) => {
       return {
-        tasks: tasks.map((t) => {
-          if (t.id === id) {
-            return { ...t, collapsed: !t.collapsed }
-          }
-
-          return t
-        }),
+        interaction: {
+          ...interaction,
+          [id]: {
+            ...interaction[id],
+            expanded: typeof value === 'boolean' ? value : !interaction[id]?.expanded,
+          },
+        },
+      }
+    }),
+  toggleLoading: (id, value) =>
+    set(({ interaction }) => {
+      return {
+        interaction: {
+          ...interaction,
+          [id]: {
+            ...interaction[id],
+            isLoading: typeof value === 'boolean' ? value : !interaction[id]?.isLoading,
+          },
+        },
       }
     }),
   onStatusChange: (checked, id) =>

@@ -11,6 +11,7 @@ import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 function Chart() {
   const tasks = useTasksStore((state) => state.tasks)
+  const interaction = useTasksStore((state) => state.interaction)
   const virtualItems = useVirtualizationStore((state) => state.virtualItems)
   const config = useConfigStore((state) => state.config)
 
@@ -30,7 +31,7 @@ function Chart() {
     let parentTask = findParentTask(givenTask, tasks)
 
     while (parentTask) {
-      if (parentTask.collapsed) return true
+      if (!interaction[parentTask.id].expanded) return true
       parentTask = findParentTask(parentTask, tasks)
     }
 

@@ -11,6 +11,7 @@ function Grid() {
   const { containerRef, isResizing, handleResizeStart } = useHorizontalResize()
 
   const tasks = useTasksStore((state) => state.tasks)
+  const interaction = useTasksStore((state) => state.interaction)
   const totalHeight = useVirtualizationStore((state) => state.totalHeight)
   const virtualItems = useVirtualizationStore((state) => state.virtualItems)
 
@@ -30,7 +31,7 @@ function Grid() {
     let parentTask = findParentTask(givenTask, tasks)
 
     while (parentTask) {
-      if (parentTask.collapsed) return true
+      if (!interaction[parentTask.id].expanded) return true
       parentTask = findParentTask(parentTask, tasks)
     }
 
