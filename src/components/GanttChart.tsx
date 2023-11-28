@@ -4,11 +4,11 @@ import { useConfigStore, useTasksStore } from '../Store'
 import AddTaskButton from './Grid/AddTaskButton'
 import Chart from './Chart/Chart'
 import { DateTime } from 'luxon'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer, elementScroll, type VirtualizerOptions } from '@tanstack/react-virtual'
 import * as SC from './GanttChart.styled'
 import Grid from './Grid/Grid'
 import { ThemeProvider } from 'styled-components'
-import React, { JSX, useEffect } from 'react'
+import React, { JSX, useCallback, useEffect, useMemo } from 'react'
 import useTranslateStore, { TranslateStore } from '../Store/TranslateStore'
 import useVirtualizationStore from '../Store/VirtualizationStore'
 import useDomStore from '../Store/DomStore'
@@ -38,6 +38,8 @@ export type GanttChartProps = {
   onTaskTimeChange?: (task: ITask, options: { start?: number; end: number }) => void
   onTaskReorder?: (sourceId: string, targetId: string, mode?: 'before' | 'after') => void
   onLinkCreate?: (sourceId: string, targetId: string) => void
+  onLinkDelete?: (sourceId: string, targetId: string) => void
+  onLinksDelete?: (sourceId: string) => void
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -98,6 +100,8 @@ export const ActionContext = React.createContext<
     | 'onTaskReorder'
     | 'onSubtaskCreate'
     | 'onLinkCreate'
+    | 'onLinkDelete'
+    | 'onLinksDelete'
     | 'columnsRenderer'
     | 'columnsOrder'
   > & { modalRef?: React.MutableRefObject<null | HTMLDivElement> }
@@ -105,6 +109,8 @@ export const ActionContext = React.createContext<
   columnsRenderer: {},
   columnsOrder: [],
 })
+
+const easeInOutQuint = (t: number) => (t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t)
 
 function GanttChart({
   config = defaultConfig,
@@ -121,6 +127,8 @@ function GanttChart({
   onTaskReorder,
   onSubtaskCreate,
   onLinkCreate,
+  onLinkDelete,
+  onLinksDelete,
   columnsRenderer,
   columnsOrder,
   virtualization,
@@ -128,20 +136,76 @@ function GanttChart({
   const storeConfig = useConfigStore((state) => state.config)
 
   const tasks = useTasksStore((state) => state.tasks)
+  const interaction = useTasksStore((state) => state.interaction)
   const setTasks = useTasksStore((state) => state.setTasks)
+  const setVisibleTasks = useTasksStore((state) => state.setVisibleTasks)
   const setConfig = useConfigStore((state) => state.setConfig)
   const setTranslations = useTranslateStore((state) => state.setTranslations)
   const setVirtualData = useVirtualizationStore((store) => store.setVirtualData)
   const [wrapperNode, setWrapperNode] = useDomStore((state) => [state.wrapperNode, state.setWrapperNode])
   const [modalShift, setModalNode] = useDomStore((state) => [state.modalShift, state.setModalNode])
 
+  const scrollingRef = React.useRef<number>()
+
   const { rowHeight } = storeConfig
 
+  const checkParentVisibility = useCallback(
+    (id?: string): boolean => {
+      const parent = id ? interaction[id] : undefined
+
+      if (!parent) return true
+
+      if (!parent?.expanded) return false
+
+      return checkParentVisibility(parent.parentId)
+    },
+    [interaction],
+  )
+
+  const visibleTasks = useMemo(
+    () => tasks?.filter(({ parentTaskId }) => checkParentVisibility(parentTaskId)),
+    [checkParentVisibility, tasks],
+  )
+
+  useEffect(() => {
+    setVisibleTasks(visibleTasks)
+  }, [setVisibleTasks, visibleTasks])
+
+  const scrollToFn: VirtualizerOptions<HTMLDivElement, Element>['scrollToFn'] = useCallback(
+    (offset, canSmooth, instance) => {
+      const duration = 1000
+      const start = wrapperNode?.scrollTop ?? 0
+      const startTime = (scrollingRef.current = Date.now())
+
+      const run = () => {
+        if (scrollingRef.current !== startTime) return
+        const now = Date.now()
+        const elapsed = now - startTime
+        const progress = easeInOutQuint(Math.min(elapsed / duration, 1))
+        const interpolated = start + (offset - start) * progress
+
+        if (elapsed < duration) {
+          elementScroll(interpolated, canSmooth, instance)
+          requestAnimationFrame(run)
+        } else {
+          elementScroll(interpolated, canSmooth, instance)
+        }
+      }
+
+      requestAnimationFrame(run)
+    },
+    [wrapperNode],
+  )
+
   const virtualizer = useVirtualizer({
-    count: tasks?.filter((t) => !t.collapsed)?.length,
+    count: visibleTasks?.length,
     getScrollElement: () => (virtualization ? wrapperNode : null),
     estimateSize: () => rowHeight,
-    overscan: 15,
+    overscan: 25,
+    scrollToFn,
+    // scrollPaddingStart: 10,
+    // scrollPaddingEnd: 10,
+    // scrollingDelay: 1000,
   })
 
   const virtualItems = virtualizer.getVirtualItems()
@@ -172,11 +236,13 @@ function GanttChart({
     })
 
     setTasks(
-      initTasks.map((task) => ({
-        ...task,
-        startDate: new Date(task.startDate as Date),
-        endDate: new Date(task.endDate as Date),
-      })),
+      initTasks
+        ?.sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((task) => ({
+          ...task,
+          startDate: new Date(task.startDate as Date),
+          endDate: new Date(task.endDate as Date),
+        })),
     )
   }, [config, initTasks, setTasks, setConfig])
 
@@ -194,12 +260,19 @@ function GanttChart({
           onTaskReorder,
           onSubtaskCreate,
           onLinkCreate,
+          onLinkDelete,
+          onLinksDelete,
           columnsRenderer,
           columnsOrder,
         }}
       >
         <SC.Wrapper>
-          <SC.ScrollWrapper ref={setWrapperNode} className='ganttalf-wrapper' id='react-ganttalf'>
+          <SC.ScrollWrapper
+            ref={setWrapperNode}
+            className='ganttalf-wrapper'
+            id='react-ganttalf'
+            // onScroll={handleOnScroll}
+          >
             <Chart />
             <Grid />
             <AddTaskButton />

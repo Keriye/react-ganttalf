@@ -8,33 +8,31 @@ type TimeLineDateRangeProps = {
   endDate: Date
 }
 
-const normalizeRanges = <T = unknown,>(visibleRange: T[], rawRange: T[]) => {
-  if (rawRange.length > 3) {
-    return [...visibleRange.slice(0, -1), rawRange.at(-1) as T]
-  }
-
-  return rawRange
-}
+const ESTIMATED_WIDTH = 24
+const DEFAULT_COLUMN_WIDTH = 36
 
 export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRangeProps) {
   const config = useConfigStore((state) => state.config)
 
-  const { columnWidth } = config
+  const { columnWidth = DEFAULT_COLUMN_WIDTH } = config
 
   const taskDays = getDatesBetween({ startDate, endDate, includeEndDate: false })
 
   const taskDaysLength = taskDays.length
-  const coefficient = Math.max(Math.round(24 / columnWidth), 1)
+  let coefficient = Math.max(Math.round(ESTIMATED_WIDTH / columnWidth), 1)
+  let visibleCount = taskDaysLength
 
-  const visibleTaskDays =
-    taskDaysLength > 2
-      ? getDatesBetween({
-          startDate,
-          endDate,
-          includeEndDate: false,
-          splitByValue: { days: coefficient },
-        })
-      : taskDays
+  if (taskDaysLength * columnWidth < 30) {
+    visibleCount = taskDaysLength === 1 ? 1 : 2
+    coefficient = taskDaysLength
+  } else if (coefficient !== 1 && taskDaysLength > 2) {
+    const availableSpace = Math.max(taskDaysLength * columnWidth - ESTIMATED_WIDTH * 2, 0)
+    const availableAmount = Math.floor(availableSpace / ESTIMATED_WIDTH)
+    if (availableAmount) {
+      visibleCount = 2 + availableAmount
+      coefficient = Math.floor((taskDaysLength - 2) / availableAmount)
+    }
+  }
 
   const daysFromStart = getDatesBetween({
     startDate: config.startDate as Date,
@@ -42,23 +40,17 @@ export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRa
     includeEndDate: false,
   }).length
 
-  const normalizedTaskDays = normalizeRanges<Date>(visibleTaskDays, taskDays)
-
-  function renderDay(day: Date) {
-    // const isCompact = columnWidth < 15
-    // const isHidden = isCompact && index !== taskDaysLength - 1 && !!(index % 2)
-
-    return <p key={day.toString()}>{DateTime.fromJSDate(day).day}</p>
-  }
-
   return (
-    <SC.TimeLineDateRange daysFromStart={daysFromStart} columnWidth={columnWidth || 36}>
+    <SC.TimeLineDateRange daysFromStart={daysFromStart} columnWidth={columnWidth}>
       <SC.TimeLineDaysWrapper
-        columnWidth={columnWidth || 36}
+        columnWidth={columnWidth}
         columnCount={taskDaysLength}
-        normalizedCount={normalizedTaskDays.length}
+        visibleCount={visibleCount}
+        coefficient={coefficient}
       >
-        {normalizedTaskDays.map(renderDay)}
+        {taskDays.map((day) => (
+          <p key={day.toString()}>{DateTime.fromJSDate(day).day}</p>
+        ))}
         <SC.TimeLineDaysInfo>
           <div>
             <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>

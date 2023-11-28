@@ -4,14 +4,18 @@ import { getTemplatedTask } from '../utils/helpers'
 
 type TasksStore = {
   tasks: ITask[]
+  visibleTasks: ITask[]
   interaction: Record<
     string,
     {
       expanded?: boolean
       isLoading?: boolean
+      parentId?: string
+      sortOrder: number
     }
   >
   setTasks: (tasks: ITask[]) => void
+  setVisibleTasks: (tasks: ITask[]) => void
   addTask: (
     task: Partial<ITask>,
     options?: {
@@ -31,13 +35,19 @@ type TasksStore = {
 
 const useTasksStore = create<TasksStore>()((set) => ({
   tasks: [],
+  visibleTasks: [],
   interaction: {},
   setTasks: (tasks) =>
     set(({ interaction }) => {
       const updatedInteraction: TasksStore['interaction'] = {}
 
-      tasks.forEach(({ id }) => {
-        updatedInteraction[id] = { ...interaction[id], expanded: interaction[id]?.expanded ?? false }
+      tasks.forEach(({ id, parentTaskId, sortOrder }) => {
+        updatedInteraction[id] = {
+          ...interaction[id],
+          expanded: interaction[id]?.expanded ?? false,
+          parentId: parentTaskId,
+          sortOrder,
+        }
       })
 
       return {
@@ -45,6 +55,7 @@ const useTasksStore = create<TasksStore>()((set) => ({
         interaction: updatedInteraction,
       }
     }),
+  setVisibleTasks: (tasks) => set({ visibleTasks: tasks }),
   addTask: (taskData, options) =>
     set(({ tasks }) => {
       const { sourceId, position = 'after' } = options ?? {}

@@ -13,7 +13,22 @@ const useVirtualizationStore = create<VirtualizationStore>()((set) => ({
   totalHeight: 0,
   virtualItems: undefined,
   setVirtualData: ({ items, totalHeight }) =>
-    set((state) => ({ virtualItems: items, totalHeight: totalHeight ?? state.totalHeight })),
+    set((state) => {
+      const currentItems = state.virtualItems
+      const currentStart = currentItems?.[0]?.start ?? 0
+      const currentEnd = currentItems?.at(-1)?.start ?? 0
+      const start = items?.[0]?.start ?? 0
+      const end = items?.at(-1)?.start ?? 0
+
+      if (currentStart !== start || currentEnd !== end || currentItems?.length !== items?.length) {
+        return {
+          virtualItems: items,
+          totalHeight: totalHeight,
+        }
+      }
+
+      return {}
+    }),
 }))
 
 export default useVirtualizationStore

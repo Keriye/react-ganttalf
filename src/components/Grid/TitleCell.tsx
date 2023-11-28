@@ -20,13 +20,19 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const t = useTranslateStore((store) => store.t)
   const wrapperNode = useDomStore((store) => store.wrapperNode)
 
-  const { onTaskSelect, onTaskDelete, onTaskTitleChange, onTaskStatusChange, onSubtaskCreate } =
-    useContext(ActionContext)
+  const {
+    onTaskSelect,
+    onTaskDelete,
+    onTaskTitleChange,
+    onTaskStatusChange,
+    onSubtaskCreate,
+    onLinkDelete,
+    onLinksDelete,
+  } = useContext(ActionContext)
 
   const interaction = useTasksStore((state) => state.interaction)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const toggleLoading = useTasksStore((state) => state.toggleLoading)
-  // const deleteTask = useTasksStore((state) => state.deleteTask)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
 
@@ -76,7 +82,6 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     if (!task.startDate) return
 
     const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
-    // const ganttChart = document.querySelector(`div[class^=Chart-module_chart]`);
     const gridNode = document.querySelector('#react-ganttalf-grid')
     const scrollLeft = diff * columnWidth - (gridNode?.clientWidth ?? 350) - 80
 
@@ -122,7 +127,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     <TitleCellStyled
       taskLevel={taskLevel}
       completed={task.status === 1}
-      collapsed={task.collapsed}
+      collapsed={!interaction[task.id]?.expanded}
       isParentTask={hasSubTasks}
     >
       {renderCollapseButton()}
@@ -227,15 +232,29 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
             //     console.log('Add to favorites')
             //   },
             // },
-            // {
-            //   iconName: 'DependencyRemove',
-            //   key: 'DependencyRemove',
-            //   text: 'Abhängigkeit entfernen',
-            //   disabled: true,
-            //   onClick: () => {
-            //     console.log('Add to favorites')
-            //   },
-            // },
+            ...(task.predecessors?.map((predecessor) => ({
+              iconName: 'DependencyRemove',
+              key: `DependencyRemove-from-${predecessor}`,
+              text: `${t('menu.delete.link.from')} ${interaction[predecessor]?.sortOrder}`,
+              onClick: () => onLinkDelete?.(predecessor, task.id),
+            })) ?? []),
+            ...(task.successors?.map((successor) => ({
+              iconName: `DependencyRemove`,
+              key: `DependencyRemove-to-${successor}`,
+              text: `${t('menu.delete.link.to')} ${interaction[successor]?.sortOrder}`,
+              onClick: () => onLinkDelete?.(task.id, successor),
+            })) ?? []),
+            ...(task.successors?.length || task.predecessors?.length
+              ? [
+                  {
+                    iconName: 'DependencyRemove',
+                    key: 'DependencyRemove',
+                    text: `Delete all links`,
+                    onClick: () => onLinksDelete?.(task.id),
+                  },
+                  { key: 'devider-3', type: 'divider' },
+                ]
+              : []),
             {
               iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
               key: 'Status',
