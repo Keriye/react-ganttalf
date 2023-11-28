@@ -6,7 +6,7 @@ import { useTasksStore } from '../Store'
 
 export function findParentTask(givenTask: ITask, tasks: ITask[]): ITask | undefined {
   return tasks.find((task) => {
-    return task.subTaskIds?.includes(givenTask.id)
+    return task.subTaskIds?.includes(givenTask?.id)
   })
 }
 

@@ -15,6 +15,7 @@ type NewTaskProps = {
 const NewTask: FC<NewTaskProps> = ({ handleEditModeSwitch }) => {
   const { onTaskCreate } = useContext(ActionContext)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const [isBlocked, setIsBlocked] = useState(false)
 
   const config = useConfigStore((state) => state.config)
   const t = useTranslateStore((state) => state.t)
@@ -28,19 +29,25 @@ const NewTask: FC<NewTaskProps> = ({ handleEditModeSwitch }) => {
   }, [])
 
   const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = useCallback((ev) => {
-    if (ev.target.value) setTitle(ev.target.value)
+    setTitle(ev.target.value ?? '')
   }, [])
 
-  const handleTaskCreate = useCallback(() => {
+  const handleTaskCreate = useCallback(async () => {
+    if (isBlocked) return
+
     if (title) {
-      // addTask({ title })
-      onTaskCreate?.({ title })
+      if (typeof onTaskCreate === 'function') {
+        setIsBlocked(true)
+        await onTaskCreate({ title })
+        setTitle('')
+        setTimeout(() => {
+          wrapperNode && (wrapperNode.scrollTop = wrapperNode.scrollHeight)
+          inputRef.current?.focus()
+        }, 50)
+        setIsBlocked(false)
+      }
     }
-    setTitle('')
-    setTimeout(() => {
-      wrapperNode && (wrapperNode.scrollTop = wrapperNode.scrollHeight)
-    }, 50)
-  }, [onTaskCreate, title, wrapperNode])
+  }, [isBlocked, onTaskCreate, title, wrapperNode])
 
   const handleEnterUp: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -70,6 +77,7 @@ const NewTask: FC<NewTaskProps> = ({ handleEditModeSwitch }) => {
         type='text'
         placeholder={t('add.task.placeholder')}
         value={title}
+        disabled={isBlocked}
         onChange={handleTitleChange}
         onBlur={handleEditModeSwitch}
         onKeyUp={handleEnterUp}

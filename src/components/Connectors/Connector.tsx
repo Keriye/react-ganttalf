@@ -115,10 +115,6 @@ function NarrowSConnector(props: INarrowSConnectorProps) {
   const stepX = distanceX / grids
   const stepY = distanceY / grids
 
-  // if (stem >= Math.abs(distanceX)) {
-  //   stem = Math.abs(distanceX) - Math.abs(stepX);
-  // }
-
   let step = Math.min(Math.abs(stepX), Math.abs(stepY))
 
   step = Math.min(step, props.minStep || step)

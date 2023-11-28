@@ -24,13 +24,6 @@ export const ScrollWrapper = styled.div`
   height: 100%;
   width: 100%;
   overflow: auto;
-
-  //-ms-overflow-style: none; /* IE and Edge */
-  //scrollbar-width: none; /* Firefox */
-  //
-  //&::-webkit-scrollbar {
-  //  display: none;
-  //}
 `
 
 export const ModalWrapper = styled.div<{ left?: number; right?: number; top?: number; bottom?: number }>`

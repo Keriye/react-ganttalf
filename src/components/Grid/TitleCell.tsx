@@ -2,7 +2,7 @@ import { ITask, TaskStatus } from '../../types'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useConfigStore, useTasksStore } from '../../Store'
 import { ActionContext } from '../GanttChart'
 import useTranslateStore from '../../Store/TranslateStore'
@@ -20,12 +20,20 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const t = useTranslateStore((store) => store.t)
   const wrapperNode = useDomStore((store) => store.wrapperNode)
 
-  const { onTaskSelect, onTaskTitleChange, onTaskStatusChange } = useContext(ActionContext)
+  const {
+    onTaskSelect,
+    onTaskDelete,
+    onTaskTitleChange,
+    onTaskStatusChange,
+    onSubtaskCreate,
+    onLinkDelete,
+    onLinksDelete,
+  } = useContext(ActionContext)
 
+  const interaction = useTasksStore((state) => state.interaction)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
-  const deleteTask = useTasksStore((state) => state.deleteTask)
+  const toggleLoading = useTasksStore((state) => state.toggleLoading)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
-  // const onSubtaskCreate = useTasksStore((state) => state.onSubtaskCreate)
   const config = useConfigStore((state) => state.config)
 
   const { startDate, columnWidth } = config
@@ -52,47 +60,74 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   }
 
   const handleTaskSelect = useCallback(() => {
-    onTaskSelect?.(task)
-  }, [onTaskSelect, task])
+    if (!interaction[task.id]?.isLoading && onTaskSelect) {
+      onTaskSelect(task)
+    }
+  }, [interaction, onTaskSelect, task])
 
   const handleTaskDelete = useCallback(() => {
-    deleteTask(task.id)
-  }, [deleteTask, task.id])
+    onTaskDelete?.(task)
+  }, [onTaskDelete, task])
 
   const handleStatusChange = useCallback(() => {
     onStatusChange(!task.status, task.id)
     onTaskStatusChange?.({ taskId: task.id, value: !task.status })
   }, [onStatusChange, onTaskStatusChange, task.id, task.status])
 
-  // const handleSubtaskCreate = useCallback(() => {
-  //   onSubtaskCreate(task.id)
-  // }, [onSubtaskCreate, task.id])
+  const handleSubtaskCreate = useCallback(() => {
+    onSubtaskCreate?.(task)
+  }, [onSubtaskCreate, task])
 
   const handleScrollToTask = useCallback(() => {
     if (!task.startDate) return
 
     const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
-    // const ganttChart = document.querySelector(`div[class^=Chart-module_chart]`);
     const gridNode = document.querySelector('#react-ganttalf-grid')
     const scrollLeft = diff * columnWidth - (gridNode?.clientWidth ?? 350) - 80
 
     wrapperNode?.scrollTo(scrollLeft, wrapperNode.scrollTop)
   }, [columnWidth, startDate, task.startDate, wrapperNode])
 
-  const handleEnterPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
-    (event) => {
-      if (event.key === 'Enter' && event.currentTarget?.value) {
-        onTaskTitleChange?.({ value: event.currentTarget.value, taskId: task.id })
+  const handleTaskTitleChange = useCallback(
+    async (value: string) => {
+      if (onTaskTitleChange) {
+        toggleLoading(task.id, true)
+        await onTaskTitleChange({ value, taskId: task.id })
+        toggleLoading(task.id, false)
       }
     },
-    [onTaskTitleChange, task.id],
+    [onTaskTitleChange, task.id, toggleLoading],
   )
+
+  const handleEnterPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
+    async (event) => {
+      if (event.key === 'Enter' && event.currentTarget?.value) {
+        void handleTaskTitleChange(event.currentTarget?.value)
+      }
+    },
+    [handleTaskTitleChange],
+  )
+
+  const handleBlur: React.FocusEventHandler<HTMLInputElement> = useCallback(
+    async (event) => {
+      if (event.currentTarget?.value) {
+        void handleTaskTitleChange(event.currentTarget?.value)
+      }
+    },
+    [handleTaskTitleChange],
+  )
+
+  useEffect(() => {
+    return () => {
+      toggleLoading(task.id, false)
+    }
+  }, [task.id, toggleLoading])
 
   return (
     <TitleCellStyled
       taskLevel={taskLevel}
       completed={task.status === 1}
-      collapsed={task.collapsed}
+      collapsed={!interaction[task.id]?.expanded}
       isParentTask={hasSubTasks}
     >
       {renderCollapseButton()}
@@ -102,6 +137,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
           setTitle(event.target.value)
         }}
         onKeyUp={handleEnterPress}
+        onBlur={handleBlur}
         value={title}
         type='text'
       />
@@ -122,12 +158,12 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               text: t('menu.open.details'),
               onClick: handleTaskSelect,
             },
-            // {
-            //   iconName: 'PaddingRight',
-            //   key: 'Subtusk',
-            //   text: t('menu.make.subtask'),
-            //   onClick: handleSubtaskCreate,
-            // },
+            {
+              iconName: 'PaddingRight',
+              key: 'Subtusk',
+              text: t('menu.make.subtask'),
+              onClick: handleSubtaskCreate,
+            },
             // {
             //   iconName: 'PaddingLeft',
             //   key: 'Promote',
@@ -196,15 +232,29 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
             //     console.log('Add to favorites')
             //   },
             // },
-            // {
-            //   iconName: 'DependencyRemove',
-            //   key: 'DependencyRemove',
-            //   text: 'Abhängigkeit entfernen',
-            //   disabled: true,
-            //   onClick: () => {
-            //     console.log('Add to favorites')
-            //   },
-            // },
+            ...(task.predecessors?.map((predecessor) => ({
+              iconName: 'DependencyRemove',
+              key: `DependencyRemove-from-${predecessor}`,
+              text: `${t('menu.delete.link.from')} ${interaction[predecessor]?.sortOrder}`,
+              onClick: () => onLinkDelete?.(predecessor, task.id),
+            })) ?? []),
+            ...(task.successors?.map((successor) => ({
+              iconName: `DependencyRemove`,
+              key: `DependencyRemove-to-${successor}`,
+              text: `${t('menu.delete.link.to')} ${interaction[successor]?.sortOrder}`,
+              onClick: () => onLinkDelete?.(task.id, successor),
+            })) ?? []),
+            ...(task.successors?.length || task.predecessors?.length
+              ? [
+                  {
+                    iconName: 'DependencyRemove',
+                    key: 'DependencyRemove',
+                    text: `Delete all links`,
+                    onClick: () => onLinksDelete?.(task.id),
+                  },
+                  { key: 'devider-3', type: 'divider' },
+                ]
+              : []),
             {
               iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
               key: 'Status',

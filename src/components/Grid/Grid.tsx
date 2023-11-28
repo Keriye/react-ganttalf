@@ -11,6 +11,7 @@ function Grid() {
   const { containerRef, isResizing, handleResizeStart } = useHorizontalResize()
 
   const tasks = useTasksStore((state) => state.tasks)
+  const visibleTasks = useTasksStore((state) => state.visibleTasks)
   const totalHeight = useVirtualizationStore((state) => state.totalHeight)
   const virtualItems = useVirtualizationStore((state) => state.virtualItems)
 
@@ -26,23 +27,8 @@ function Grid() {
     return taskLevel
   }
 
-  function getCollapsedState(givenTask: ITask) {
-    let parentTask = findParentTask(givenTask, tasks)
-
-    while (parentTask) {
-      if (parentTask.collapsed) return true
-      parentTask = findParentTask(parentTask, tasks)
-    }
-
-    return false
-  }
-
   const renderRow = (task: ITask, index: number) => {
     if (!task) return null
-
-    const collapsed = getCollapsedState(task)
-
-    if (collapsed) return null
 
     const taskLevel = getTaskLevel(task)
 
@@ -58,7 +44,7 @@ function Grid() {
   }
 
   const renderVirtualRow = ({ index }: VirtualItem) => {
-    const task = tasks[index]
+    const task = visibleTasks[index]
 
     if (!task) return null
 
@@ -66,14 +52,15 @@ function Grid() {
   }
 
   return (
-    <SC.Wrapper id='react-ganttalf-grid' ref={containerRef} isResizing={isResizing} totalHeight={totalHeight}>
+    <SC.Wrapper id='react-ganttalf-grid' ref={containerRef} isResizing={isResizing}>
       {virtualItems ? (
         <>
           <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />
           {virtualItems.map(renderVirtualRow)}
+          <div style={{ height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px` }} />
         </>
       ) : (
-        tasks.map(renderRow)
+        visibleTasks.map(renderRow)
       )}
       <SC.ResizeLine onMouseDown={handleResizeStart} />
     </SC.Wrapper>

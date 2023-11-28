@@ -36,16 +36,18 @@ export const TimeLineDateRange = styled.div<{
   background: ${({ theme }) => theme.white};
 `
 
-export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount: number; normalizedCount: number }>`
+export const TimeLineDaysWrapper = styled.div<{
+  columnWidth: number
+  columnCount: number
+  visibleCount: number
+  coefficient: number
+}>`
   box-shadow: 0 2px 3px 0 rgb(0 0 0 / 10%);
 
   background: ${({ theme }) => theme.white};
   border: 1px solid ${({ theme }) => theme.themePrimary};
-  width: ${({ columnWidth, columnCount, normalizedCount }) =>
-    Math.max(
-      columnWidth * columnCount,
-      normalizedCount === 2 && normalizedCount !== columnCount ? 28 : normalizedCount === 2 ? 20 : 14,
-    )}px;
+  width: ${({ columnWidth, columnCount, visibleCount }) =>
+    Math.max(columnWidth * columnCount, visibleCount === 2 ? 32 : 14)}px;
   height: 22px;
 
   border-radius: 3px;
@@ -55,12 +57,19 @@ export const TimeLineDaysWrapper = styled.div<{ columnWidth: number; columnCount
   align-items: center;
   justify-content: space-between;
 
-  gap: ${({ normalizedCount, columnCount }) => (normalizedCount === 2 && normalizedCount !== columnCount ? 4 : 0)}px;
+  gap: ${({ visibleCount, columnCount }) => (visibleCount === 2 && visibleCount !== columnCount ? 4 : 0)}px;
 
   & > p {
+    display: none;
+    justify-content: center;
     text-align: center;
     font-size: 12px;
     flex: 1 1 ${({ columnWidth }) => columnWidth}px;
+
+    &:nth-child(${({ coefficient }) => coefficient}n + 1),
+    &:last-of-type {
+      display: flex;
+    }
 
     &:first-of-type,
     &:last-of-type {
