@@ -73,7 +73,7 @@ function Chart() {
       <TimeLineHeader days={days} />
       <SC.ChartWrapper ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
         <SC.TodayIndicator indicatorPosition={todayIndicatorPosition} />
-        <SC.ChartContainer id='react-ganttalf-tasks-container'>
+        <SC.ChartContainer id='react-ganttalf-tasks-container' segmentWidth={columnWidth * 7}>
           <Connectors tasks={tasksToDisplay} />
           {virtualItems && <div className='placeholder' style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
           {tasksToDisplay.map((task) => (

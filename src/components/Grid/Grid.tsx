@@ -55,9 +55,15 @@ function Grid() {
     <SC.Wrapper id='react-ganttalf-grid' ref={containerRef} isResizing={isResizing}>
       {virtualItems ? (
         <>
-          <div style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />
+          <div style={{ height: `${virtualItems[0]?.start ?? 0}px`, width: '100%', backgroundColor: 'white' }} />
           {virtualItems.map(renderVirtualRow)}
-          <div style={{ height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px` }} />
+          <div
+            style={{
+              height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px`,
+              width: '100%',
+              backgroundColor: 'white',
+            }}
+          />
         </>
       ) : (
         visibleTasks.map(renderRow)

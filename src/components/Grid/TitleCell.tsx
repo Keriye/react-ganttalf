@@ -36,6 +36,10 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
 
+  useEffect(() => {
+    setTitle(task.title)
+  }, [task.title])
+
   const { startDate, columnWidth } = config
 
   // const wrapperNode = useDomStore((store) => store.wrapperNode)

@@ -390,7 +390,6 @@ function Row({ task }: IRowProps) {
       ref={rowRef}
       type={task.type || 1}
       rowHeight={rowHeight}
-      segmentWidth={columnWidth * 7}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
       style={{ height: rowHeight }}

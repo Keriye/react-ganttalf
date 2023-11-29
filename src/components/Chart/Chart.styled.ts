@@ -7,9 +7,15 @@ export const ChartWrapper = styled.div<{ width: number }>`
   //top: 0;
 `
 
-export const ChartContainer = styled.div`
+export const ChartContainer = styled.div<{ segmentWidth: number }>`
   width: 100%;
   position: relative;
+  ${({ theme, segmentWidth }) =>
+    segmentWidth > 20 &&
+    css`
+      background: left / ${segmentWidth}px repeat
+        linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
+    `}
 `
 
 export const ResizeEdge = styled.div<{ endpoint: 'start' | 'end'; external: boolean }>`
@@ -55,14 +61,8 @@ export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
   //}
 `
 
-export const RowStyled = styled.div<{ type: number; rowHeight: number; segmentWidth: number; isParentTask: boolean }>`
+export const RowStyled = styled.div<{ type: number; rowHeight: number; isParentTask: boolean }>`
   width: 100%;
-  ${({ theme, segmentWidth }) =>
-    segmentWidth > 20 &&
-    css`
-      background: left / ${segmentWidth}px repeat
-        linear-gradient(to right, transparent 71.43%, ${theme.neutralLighterAlt} 71.43%);
-    `}
   border-bottom: 1px solid ${({ theme }) => theme.neutralLight};
 
   &:hover {

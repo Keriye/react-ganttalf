@@ -238,7 +238,6 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
         <Checkbox onChange={handleOnStatusChange} defaultChecked={task.status === TaskStatus.Completed} />
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
-        {/*{renderAssigneeColumn()}*/}
       </div>
       <div className={getDragOverRightClassName()}>
         <Icon className='c-grid-drag-over-icon' width={18} height={18} iconName='PaddingRight' />
