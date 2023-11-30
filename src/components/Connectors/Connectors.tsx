@@ -76,8 +76,6 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
     )
   }
 
-  if (!connectors?.length) return null
-
   return (
     <ConnectorsStyled
       id='c-chart-connectors'

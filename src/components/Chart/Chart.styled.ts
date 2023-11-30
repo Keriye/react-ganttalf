@@ -26,19 +26,29 @@ export const ResizeEdge = styled.div<{ endpoint: 'start' | 'end'; external: bool
   position: absolute;
   ${({ endpoint, external }) =>
     endpoint === 'start'
+      ? external
+        ? css`
+            z-index: 1;
+            left: -5px;
+
+            & > .c-chart-bar-task-draggable-indicator.c-chart-bar-task-draggable-indicator {
+              margin: 0 2px 0 0;
+            }
+          `
+        : css`
+            left: 0;
+          `
+      : external
       ? css`
-          left: ${external ? '-6px' : 0};
+          z-index: 1;
+          right: -5px;
+          & > .c-chart-bar-task-draggable-indicator.c-chart-bar-task-draggable-indicator {
+            margin: 0 0 0 2px;
+          }
         `
       : css`
-          right: ${external ? '-6px' : 0};
+          right: 0;
         `}
-  ${({ external }) =>
-    external &&
-    css`
-      .c-chart-bar-task-draggable-indicator {
-        margin: 0;
-      }
-    `}
 `
 
 export const TodayIndicator = styled.div<{ indicatorPosition: number }>`
@@ -244,6 +254,7 @@ export const Task = styled(TaskPosition)<{
 
 export const MileStone = styled(TaskPosition)<{
   rowHeight: number
+  columnWidth: number
   isParentTask: boolean
 }>`
   display: flex;
@@ -306,7 +317,7 @@ export const MileStone = styled(TaskPosition)<{
   }
 
   .link-start {
-    left: -26px;
+    left: -${({ columnWidth }) => 26 + Math.max(0, 9 - columnWidth / 2)}px;
     min-height: ${({ rowHeight }) => rowHeight * 0.5}px;
     border-top-left-radius: 50%;
     border-bottom-left-radius: 50%;
@@ -322,7 +333,7 @@ export const MileStone = styled(TaskPosition)<{
     border-top-right-radius: 50%;
     border-bottom-right-radius: 50%;
     justify-content: end;
-    right: -26px;
+    right: -${({ columnWidth }) => 26 + Math.max(0, 9 - columnWidth / 2)}px;
 
     &:hover {
       background: ${({ theme }) => theme.neutralLighter};

@@ -197,12 +197,15 @@ function GanttChart({
     [wrapperNode],
   )
 
+  // const getItemKey = useCallback((index: number) => visibleTasks[index]?.id ?? index, [visibleTasks])
+
   const virtualizer = useVirtualizer({
     count: visibleTasks?.length,
     getScrollElement: () => (virtualization ? wrapperNode : null),
     estimateSize: () => rowHeight,
     overscan: 25,
     scrollToFn,
+    // getItemKey,
     // scrollPaddingStart: 10,
     // scrollPaddingEnd: 10,
     // scrollingDelay: 1000,
@@ -219,7 +222,7 @@ function GanttChart({
     if (virtualization) {
       setVirtualData({ items: virtualItems, totalHeight: virtualizer.getTotalSize() })
     }
-  }, [setVirtualData, virtualization, virtualItems?.[0]?.index, virtualItems?.[virtualItems.length - 1]?.index])
+  }, [setVirtualData, virtualization, virtualItems?.[0]?.index, virtualItems?.at(-1)?.index])
 
   useEffect(() => {
     const startDay = new Date(config.startDate).getDay()
