@@ -1,13 +1,14 @@
 import * as SC from './Chart.styled'
+
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
+import { ActionContext } from '../GanttChart'
 import { ITask } from '../../types'
 import NewLinkConnector from '../Connectors/NewLinkConnector'
 import ReactDOM from 'react-dom'
 import TimeLineDateRange from '../TimeLineHeader/TimeLineDateRange'
-import { ActionContext } from '../GanttChart'
 import useDomStore from '../../Store/DomStore'
 import useInteractionStore from '../../Store/InteractionStore'
 
@@ -44,24 +45,32 @@ function Row({ task }: IRowProps) {
 
   const isParentTask = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
 
-  const daysFromStart = getDatesBetween({
-    startDate: startDate as Date,
-    endDate: task.startDate as Date,
-    includeEndDate: false,
-  })
+  const daysFromStart = useMemo(
+    () =>
+      getDatesBetween({
+        startDate: startDate as Date,
+        endDate: task.startDate as Date,
+        includeEndDate: false,
+      }),
+    [startDate, task.startDate],
+  )
 
-  const taskDays = getDatesBetween({
-    startDate: task.startDate as Date,
-    endDate: task.endDate as Date,
-    includeEndDate: false,
-  })
+  const taskDays = useMemo(
+    () =>
+      getDatesBetween({
+        startDate: task.startDate as Date,
+        endDate: task.endDate as Date,
+        includeEndDate: false,
+      }),
+    [task.startDate, task.endDate],
+  )
 
   useEffect(() => {
     if (taskRef.current) {
       taskRef.current.style.left = `${daysFromStart.length * columnWidth}px`
       taskRef.current.style.width = `${taskDays.length * columnWidth}px`
     }
-  }, [columnWidth])
+  }, [columnWidth, daysFromStart.length, taskDays.length])
 
   // handle task move
   useEffect(() => {
