@@ -79,8 +79,9 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   }, [onStatusChange, onTaskStatusChange, task.id, task.status])
 
   const handleSubtaskCreate = useCallback(() => {
+    toggleCollapse(task.id, true)
     onSubtaskCreate?.(task)
-  }, [onSubtaskCreate, task])
+  }, [onSubtaskCreate, task, toggleCollapse])
 
   const handleScrollToTask = useCallback(() => {
     if (!task.startDate) return
