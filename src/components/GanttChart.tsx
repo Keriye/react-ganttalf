@@ -40,6 +40,7 @@ export type GanttChartProps = {
   onLinkCreate?: (sourceId: string, targetId: string) => void
   onLinkDelete?: (sourceId: string, targetId: string) => void
   onLinksDelete?: (sourceId: string) => void
+  onLoadSubTasks?: (task: ITask) => Promise<ITask[]>
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -90,20 +91,21 @@ const defaultTheme = {
 export const ActionContext = React.createContext<
   Pick<
     GanttChartProps,
-    | 'onTaskCreate'
-    | 'onTaskDelete'
-    | 'onTaskAppend'
-    | 'onTaskSelect'
-    | 'onTaskStatusChange'
-    | 'onTaskTitleChange'
-    | 'onTaskTimeChange'
-    | 'onTaskReorder'
-    | 'onSubtaskCreate'
+    | 'columnsOrder'
+    | 'columnsRenderer'
+    | 'onLoadSubTasks'
     | 'onLinkCreate'
     | 'onLinkDelete'
     | 'onLinksDelete'
-    | 'columnsRenderer'
-    | 'columnsOrder'
+    | 'onSubtaskCreate'
+    | 'onTaskAppend'
+    | 'onTaskCreate'
+    | 'onTaskDelete'
+    | 'onTaskReorder'
+    | 'onTaskSelect'
+    | 'onTaskStatusChange'
+    | 'onTaskTimeChange'
+    | 'onTaskTitleChange'
   > & { modalRef?: React.MutableRefObject<null | HTMLDivElement> }
 >({
   columnsRenderer: {},
@@ -113,24 +115,25 @@ export const ActionContext = React.createContext<
 const easeInOutQuint = (t: number) => (t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t)
 
 function GanttChart({
+  columnsOrder,
+  columnsRenderer,
   config = defaultConfig,
-  theme = defaultTheme,
-  tasks: initTasks = [],
-  translations,
-  onTaskCreate,
-  onTaskDelete,
-  onTaskAppend,
-  onTaskSelect,
-  onTaskStatusChange,
-  onTaskTitleChange,
-  onTaskTimeChange,
-  onTaskReorder,
-  onSubtaskCreate,
+  onLoadSubTasks,
   onLinkCreate,
   onLinkDelete,
   onLinksDelete,
-  columnsRenderer,
-  columnsOrder,
+  onSubtaskCreate,
+  onTaskAppend,
+  onTaskCreate,
+  onTaskDelete,
+  onTaskReorder,
+  onTaskSelect,
+  onTaskStatusChange,
+  onTaskTimeChange,
+  onTaskTitleChange,
+  tasks: initTasks = [],
+  theme = defaultTheme,
+  translations,
   virtualization,
 }: GanttChartProps) {
   const storeConfig = useConfigStore((state) => state.config)
@@ -161,6 +164,14 @@ function GanttChart({
     },
     [interaction],
   )
+
+  function convertTasksDates(tasks: ITask[]): ITask[] {
+    return tasks.map((task) => ({
+      ...task,
+      startDate: new Date(task.startDate as Date),
+      endDate: new Date(task.endDate as Date),
+    }))
+  }
 
   const visibleTasks = useMemo(
     () => tasks?.filter(({ parentTaskId }) => checkParentVisibility(parentTaskId)),
@@ -238,35 +249,42 @@ function GanttChart({
         .toJSDate(),
     })
 
-    setTasks(
-      initTasks
-        ?.sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((task) => ({
-          ...task,
-          startDate: new Date(task.startDate as Date),
-          endDate: new Date(task.endDate as Date),
-        })),
-    )
+    setTasks(convertTasksDates(initTasks)?.sort((a, b) => a.sortOrder - b.sortOrder))
   }, [config, initTasks, setTasks, setConfig])
+
+  async function loadSubTasks(task: ITask) {
+    if (onLoadSubTasks) {
+      return onLoadSubTasks(task).then((subTasks) => {
+        const subTasksWithDates = convertTasksDates(subTasks)
+
+        setTasks([...tasks, ...subTasksWithDates]?.sort((a, b) => a.sortOrder - b.sortOrder))
+
+        return subTasksWithDates
+      })
+    }
+
+    return Promise.reject(new Error('onLoadSubTasks is not defined'))
+  }
 
   return (
     <ThemeProvider theme={{ ...defaultTheme, ...theme, ...config }}>
       <ActionContext.Provider
         value={{
-          onTaskCreate,
-          onTaskDelete,
-          onTaskAppend,
-          onTaskSelect,
-          onTaskStatusChange,
-          onTaskTitleChange,
-          onTaskTimeChange,
-          onTaskReorder,
-          onSubtaskCreate,
+          columnsOrder,
+          columnsRenderer,
+          onLoadSubTasks: onLoadSubTasks ? (task) => loadSubTasks(task) : undefined,
           onLinkCreate,
           onLinkDelete,
           onLinksDelete,
-          columnsRenderer,
-          columnsOrder,
+          onSubtaskCreate,
+          onTaskAppend,
+          onTaskCreate,
+          onTaskDelete,
+          onTaskReorder,
+          onTaskSelect,
+          onTaskStatusChange,
+          onTaskTimeChange,
+          onTaskTitleChange,
         }}
       >
         <SC.Wrapper>

@@ -31,6 +31,7 @@ type TasksStore = {
   onTaskDateChange: (id: string, newDates: { startDate?: Date | string; endDate?: Date | string }) => void
   onSubtaskCreate: (id: string) => void
   onSubtaskPromote: (id: string) => void
+  getSubTasks: (ids: string[]) => ITask[]
 }
 
 const useTasksStore = create<TasksStore>()((set) => ({
@@ -182,6 +183,11 @@ const useTasksStore = create<TasksStore>()((set) => ({
       }
     }),
   onSubtaskPromote: () => null,
+  getSubTasks: (ids: string[]) => {
+    const { tasks } = useTasksStore.getState() as { tasks: ITask[] }
+
+    return tasks.filter((task: ITask) => ids.includes(task.id))
+  },
 }))
 
 export default useTasksStore

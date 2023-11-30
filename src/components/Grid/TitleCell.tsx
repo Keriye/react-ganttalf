@@ -1,13 +1,15 @@
 import { ITask, TaskStatus } from '../../types'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useConfigStore, useTasksStore } from '../../Store'
+
+import { ActionContext } from '../GanttChart'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useConfigStore, useTasksStore } from '../../Store'
-import { ActionContext } from '../GanttChart'
-import useTranslateStore from '../../Store/TranslateStore'
 import { getDatesBetween } from '../../utils/helpers'
 import useDomStore from '../../Store/DomStore'
+import useTranslateStore from '../../Store/TranslateStore'
+
 // import useDomStore from '../../Store/DomStore'
 
 interface ITitleCellProps {
@@ -27,14 +29,18 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     onTaskStatusChange,
     onSubtaskCreate,
     onLinkDelete,
+    onLoadSubTasks,
     onLinksDelete,
   } = useContext(ActionContext)
 
   const interaction = useTasksStore((state) => state.interaction)
+  const getSubTasks = useTasksStore((state) => state.getSubTasks)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const toggleLoading = useTasksStore((state) => state.toggleLoading)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
   const config = useConfigStore((state) => state.config)
+
+  const isLoading = interaction[task.id]?.isLoading
 
   useEffect(() => {
     setTitle(task.title)
@@ -48,26 +54,39 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   // const hasParent = !!task.predecessors?.length
   const hasSubTasks = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
 
+  function onCollapseButtonClick() {
+    if (isLoading) return
+
+    toggleCollapse(task.id)
+
+    if (onLoadSubTasks) {
+      // if onLoadSubTasks is defined, we check if all subtasks are in state
+      // if not, we load them
+      const subTasks = getSubTasks(task.subTaskIds ?? [])
+
+      if (subTasks.length !== task.subTaskIds?.length) {
+        // only load subtasks if not all subtasks are in state
+        toggleLoading(task.id, true)
+        onLoadSubTasks(task).finally(() => toggleLoading(task.id, false))
+      }
+    }
+  }
+
   const renderCollapseButton = () => {
     if (!hasSubTasks) return null
 
     return (
-      <button
-        className='c-grid-title-collapse-button'
-        onClick={() => {
-          toggleCollapse(task.id)
-        }}
-      >
+      <button className='c-grid-title-collapse-button' onClick={onCollapseButtonClick}>
         <Icon width={10} height={10} className='c-grid-title-collapse-icon' iconName='ChevronRightMed' />
       </button>
     )
   }
 
   const handleTaskSelect = useCallback(() => {
-    if (!interaction[task.id]?.isLoading && onTaskSelect) {
+    if (!isLoading && onTaskSelect) {
       onTaskSelect(task)
     }
-  }, [interaction, onTaskSelect, task])
+  }, [isLoading, onTaskSelect, task])
 
   const handleTaskDelete = useCallback(() => {
     onTaskDelete?.(task)

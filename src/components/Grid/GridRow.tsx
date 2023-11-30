@@ -1,13 +1,14 @@
-import { useConfigStore, useTasksStore } from '../../Store'
-import React, { useCallback, useContext, useRef, useState } from 'react'
+import * as SC from './Grid.styled'
 
+import { ITask, TaskStatus } from '../../types'
+import React, { useCallback, useContext, useRef, useState } from 'react'
+import { useConfigStore, useTasksStore } from '../../Store'
+
+import { ActionContext } from '../GanttChart'
 // import Avatar from './Avatar'
 import Checkbox from './Checkbox'
-import * as SC from './Grid.styled'
-import { ITask, TaskStatus } from '../../types'
 import Icon from './SvgIcon'
 import TitleCell from './TitleCell'
-import { ActionContext } from '../GanttChart'
 
 interface IGridRowProps {
   isFirstItem: boolean
@@ -235,7 +236,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
           </div>
           {renderSortOrderColumn()}
         </div>
-        <Checkbox onChange={handleOnStatusChange} defaultChecked={task.status === TaskStatus.Completed} />
+        <Checkbox id={task.id} onChange={handleOnStatusChange} defaultChecked={task.status === TaskStatus.Completed} />
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
       </div>

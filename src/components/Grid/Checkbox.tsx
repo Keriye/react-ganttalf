@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 
 import Icon from './SvgIcon'
+import LoadingSpinner from './LoadingSpinner'
 // import completionSound from './completion-sound.mp3'
 import styled from 'styled-components'
+import { useTasksStore } from '../../Store'
 
 const CheckboxCellStyled = styled.div<{ checked: boolean }>`
   @keyframes check {
@@ -130,12 +132,14 @@ const CheckboxCellStyled = styled.div<{ checked: boolean }>`
 interface ICheckboxProps {
   defaultChecked: boolean
   onChange: (checked: boolean) => void
+  id: string
 }
 
-export default function Checkbox({ defaultChecked, onChange }: ICheckboxProps) {
+export default function Checkbox({ defaultChecked, onChange, id }: ICheckboxProps) {
   const [checked, setChecked] = useState(defaultChecked)
   // const [audio] = useState(new Audio(completionSound))
   const [clickedChecked, setClickedChecked] = useState(false)
+  const interaction = useTasksStore((state) => state.interaction)
 
   useEffect(() => {
     setChecked(defaultChecked)
@@ -154,6 +158,10 @@ export default function Checkbox({ defaultChecked, onChange }: ICheckboxProps) {
 
       return !prevState
     })
+  }
+
+  if (interaction[id]?.isLoading) {
+    return <LoadingSpinner />
   }
 
   return (
