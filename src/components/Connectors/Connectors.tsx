@@ -25,41 +25,63 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
     if (!tasks?.length) return []
 
     return tasks.flatMap((task) => {
-      const { successors } = task
-
-      if (!successors?.length) return []
+      const { successors, predecessors } = task
 
       let amountOfHiddenSuccessors = 0
+      let amountOfHiddenPredecessors = 0
 
-      const successorConnetions = successors.map((successor) => {
-        const successorTask = tasks.find(({ id }) => id === successor)
+      const successorConnetions =
+        successors?.map((successor) => {
+          const successorTask = tasks.find(({ id }) => id === successor)
 
-        if (!successorTask) {
-          amountOfHiddenSuccessors++
-        }
+          if (!successorTask) {
+            amountOfHiddenSuccessors++
+          }
 
-        return {
-          taskId: task.id,
-          flatStart: task.type === 2 || !!task.subTaskIds?.length,
-          flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
-          successor,
-          key: `${task.id}-${successor}-${visibleTasks?.length}`,
+          return {
+            taskId: task.id,
+            flatStart: task.type === 2 || !!task.subTaskIds?.length,
+            flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
+            successor,
+            key: `${task.id}-${successor}-${visibleTasks?.length}`,
+          }
+        }) ?? []
+
+      predecessors?.forEach((predecessor) => {
+        const predecessorTask = tasks.find(({ id }) => id === predecessor)
+
+        if (!predecessorTask) {
+          amountOfHiddenPredecessors++
         }
       })
 
-      return amountOfHiddenSuccessors
-        ? [
-            ...successorConnetions,
-            {
-              taskId: task.id,
-              flatStart: true,
-              flatEnd: true,
-              hiddenItems: amountOfHiddenSuccessors,
-              successor: 'hidden',
-              key: `${task.id}-hidden-${visibleTasks?.length}`,
-            },
-          ]
-        : successorConnetions
+      return [
+        ...successorConnetions,
+        ...(amountOfHiddenSuccessors
+          ? [
+              {
+                taskId: task.id,
+                flatStart: true,
+                flatEnd: true,
+                hiddenItems: amountOfHiddenSuccessors,
+                successor: 'hidden',
+                key: `${task.id}-hidden-${visibleTasks?.length}`,
+              },
+            ]
+          : []),
+        ...(amountOfHiddenPredecessors
+          ? [
+              {
+                taskId: 'hidden',
+                flatStart: true,
+                flatEnd: true,
+                hiddenItems: amountOfHiddenPredecessors,
+                successor: task.id,
+                key: `hidden-${task.id}-${visibleTasks?.length}`,
+              },
+            ]
+          : []),
+      ]
     })
   }, [tasks, visibleTasks])
 
