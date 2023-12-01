@@ -16,7 +16,7 @@ type ConnectorProps = {
   flatEnd?: boolean
 }
 
-export default function Connector({ startId, endId, mousePosition, hiddenItems, flatStart, flatEnd }: ConnectorProps) {
+export default function Connector({ startId, endId, mousePosition, hiddenItems, flatStart }: ConnectorProps) {
   const config = useConfigStore((state) => state.config)
   const isCommon = !hiddenItems && !mousePosition
 
@@ -29,15 +29,17 @@ export default function Connector({ startId, endId, mousePosition, hiddenItems, 
   const { rowHeight } = config
 
   const coordsStart = useResizeObserver({ taskElement: element1, rowHeight, startElement: true, isFlat: flatStart })
-  const coordsEnd = useResizeObserver({ taskElement: element2, rowHeight, startElement: false, isFlat: flatEnd })
+  const coordsEnd = useResizeObserver({ taskElement: element2, rowHeight, startElement: false, isFlat: true })
 
   useLayoutEffect(() => {
     if (!initialized) {
       const el1 = document.getElementById('task-bar-' + startId)
       const el2 = document.getElementById('task-bar-' + endId)
 
-      if ((el1 && el2) || (el1 && !isCommon)) {
-        element1.current = el1
+      if ((el1 && el2) || (el1 && !isCommon) || (el2 && !isCommon)) {
+        if (el1) {
+          element1.current = el1
+        }
 
         if (el2) {
           element2.current = el2
@@ -54,27 +56,34 @@ export default function Connector({ startId, endId, mousePosition, hiddenItems, 
 
   if (isCommon && (!coordsEnd || !coordsStart)) return null
 
-  if (!isCommon && !coordsStart) return null
+  if (!isCommon && !coordsStart && !coordsEnd) return null
 
-  if (!coordsStart) return null
-
-  const endPoint = (coordsEnd || mousePosition || { ...coordsStart, x: coordsStart.x + 40 }) as { x: number; y: number }
+  const startPoint = (coordsStart || { ...coordsEnd, x: coordsEnd!.x - 40 }) as { x: number; y: number }
+  const endPoint = (coordsEnd || mousePosition || { ...coordsStart, x: coordsStart!.x + 40 }) as {
+    x: number
+    y: number
+  }
 
   return (
     <>
+      {!!(hiddenItems && !coordsStart) && (
+        <text x={startPoint.x - 20} y={endPoint.y + 4}>
+          +{hiddenItems}
+        </text>
+      )}
       <NarrowSConnector
         stroke={theme.neutralSecondaryAlt}
         strokeWidth={1}
         endPoint={endPoint}
         startId={startId}
         endId={endId}
-        startPoint={coordsStart}
+        startPoint={startPoint}
         roundCorner={true}
         config={config}
         endArrow={true}
         arrowSize={5}
       />
-      {!!hiddenItems && (
+      {!!(hiddenItems && !coordsEnd) && (
         <text x={endPoint.x + 6} y={endPoint.y + 4}>
           +{hiddenItems}
         </text>
