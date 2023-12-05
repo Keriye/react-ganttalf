@@ -20,6 +20,7 @@ interface IConnector {
 
 const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
   const visibleTasks = useTasksStore((state) => state.visibleTasks)
+  const version = useTasksStore((state) => state.version)
 
   const connectors = useMemo(() => {
     if (!tasks?.length) return []
@@ -43,7 +44,7 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
             flatStart: task.type === 2 || !!task.subTaskIds?.length,
             flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
             successor,
-            key: `${task.id}-${successor}-${visibleTasks?.length}`,
+            key: `${task.id}-${successor}-${visibleTasks?.length}-v${version}`,
           }
         }) ?? []
 
@@ -65,7 +66,7 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
                 flatEnd: true,
                 hiddenItems: amountOfHiddenSuccessors,
                 successor: 'hidden',
-                key: `${task.id}-hidden-${visibleTasks?.length}`,
+                key: `${task.id}-hidden-${visibleTasks?.length}-v${version}`,
               },
             ]
           : []),
@@ -77,7 +78,7 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
                 flatEnd: true,
                 hiddenItems: amountOfHiddenPredecessors,
                 successor: task.id,
-                key: `hidden-${task.id}-${visibleTasks?.length}`,
+                key: `hidden-${task.id}-${visibleTasks?.length}-v${version}`,
               },
             ]
           : []),
