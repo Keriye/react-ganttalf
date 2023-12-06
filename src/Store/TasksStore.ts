@@ -32,6 +32,8 @@ type TasksStore = {
   onSubtaskCreate: (id: string) => void
   onSubtaskPromote: (id: string) => void
   getSubTasks: (ids: string[]) => ITask[]
+  version: number
+  invalidateVersion: () => void
 }
 
 const useTasksStore = create<TasksStore>()((set) => ({
@@ -188,6 +190,8 @@ const useTasksStore = create<TasksStore>()((set) => ({
 
     return tasks.filter((task: ITask) => ids.includes(task.id))
   },
+  version: 0,
+  invalidateVersion: () => set((store) => ({ version: store.version + 1 })),
 }))
 
 export default useTasksStore

@@ -27,6 +27,7 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
   const addTask = useTasksStore((state) => state.addTask)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
+  const invalidateVersion = useTasksStore((state) => state.invalidateVersion)
   const config = useConfigStore((state) => state.config)
 
   const { columnsRenderer, columnsOrder, onTaskAppend, onTaskReorder, onTaskStatusChange } = useContext(ActionContext)
@@ -138,15 +139,16 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     openSubTasksRef.current = null
   }
 
-  function onDrop(event: React.DragEvent) {
+  async function onDrop(event: React.DragEvent) {
     setDragOverPosition(null)
     clearTimeout(openSubTasksRef.current as NodeJS.Timeout)
 
     const sourceId = event.dataTransfer.getData('sourceId')
     const reorderMode = dragOverPosition === 'top' ? 'before' : dragOverPosition === 'bottom' ? 'after' : undefined
 
-    if (sourceId && reorderMode) {
-      onTaskReorder?.(sourceId, task.id, reorderMode)
+    if (sourceId && reorderMode && onTaskReorder) {
+      await onTaskReorder(sourceId, task.id, reorderMode)
+      invalidateVersion()
     }
 
     openSubTasksRef.current = null
