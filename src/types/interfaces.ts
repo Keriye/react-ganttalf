@@ -25,6 +25,10 @@ export interface ITask {
   type?: TaskType
   collapsed?: boolean
   parentTaskId?: string
+  permissions?: {
+    updateStatus?: boolean
+    delete?: boolean
+  }
 }
 
 export interface IConfig {

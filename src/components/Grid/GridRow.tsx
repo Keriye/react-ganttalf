@@ -238,7 +238,12 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
           </div>
           {renderSortOrderColumn()}
         </div>
-        <Checkbox id={task.id} onChange={handleOnStatusChange} defaultChecked={task.status === TaskStatus.Completed} />
+        <Checkbox
+          id={task.id}
+          onChange={handleOnStatusChange}
+          defaultChecked={task.status === TaskStatus.Completed}
+          disabled={typeof task.permissions?.updateStatus === 'boolean' ? !task.permissions.updateStatus : false}
+        />
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
       </div>
