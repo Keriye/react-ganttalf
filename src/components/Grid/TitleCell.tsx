@@ -141,6 +141,14 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     [handleTaskTitleChange],
   )
 
+  function shouldDisplayStatusItem() {
+    if (typeof task.permissions?.updateStatus === 'boolean') {
+      return task.permissions.updateStatus
+    }
+
+    return true
+  }
+
   useEffect(() => {
     return () => {
       toggleLoading(task.id, false)
@@ -276,15 +284,20 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
                     text: `Delete all links`,
                     onClick: () => onLinksDelete?.(task.id),
                   },
-                  { key: 'devider-3', type: 'divider' },
                 ]
               : []),
-            {
-              iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
-              key: 'Status',
-              text: task.status === TaskStatus.Completed ? t('menu.status.reactivate') : t('menu.status.complete'),
-              onClick: handleStatusChange,
-            },
+            ...(shouldDisplayStatusItem()
+              ? [
+                  { key: 'devider-3', type: 'divider' },
+                  {
+                    iconName: task.status === TaskStatus.Completed ? 'RevToggleKey' : 'Completed',
+                    key: 'Status',
+                    text:
+                      task.status === TaskStatus.Completed ? t('menu.status.reactivate') : t('menu.status.complete'),
+                    onClick: handleStatusChange,
+                  },
+                ]
+              : []),
           ]}
           iconName='MoreVertical'
           className='c-grid-title-icon-button-moreVertical'

@@ -6,7 +6,7 @@ import LoadingSpinner from './LoadingSpinner'
 import styled from 'styled-components'
 import { useTasksStore } from '../../Store'
 
-const CheckboxCellStyled = styled.div<{ checked: boolean }>`
+const CheckboxCellStyled = styled.div<{ checked: boolean; disabled: boolean }>`
   @keyframes check {
     0%,
     15% {
@@ -46,7 +46,7 @@ const CheckboxCellStyled = styled.div<{ checked: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
 
   .c-grid-checkbox {
     width: 16px;
@@ -111,11 +111,16 @@ const CheckboxCellStyled = styled.div<{ checked: boolean }>`
 
       return 'transparent'
     }};
-    border: 1px solid ${(props) => props.theme.themePrimary};
+    border: 1px solid
+      ${(props) => {
+        if (props.disabled) return props.theme.neutralSecondary
+
+        return props.theme.themePrimary
+      }};
 
     .c-grid-checkbox-icon {
-      fill: ${({ checked, theme }) => {
-        if (checked) return theme.white
+      fill: ${({ checked, theme, disabled }) => {
+        if (checked || disabled) return theme.white
         return theme.themePrimary
       }};
     }
@@ -133,9 +138,10 @@ interface ICheckboxProps {
   defaultChecked: boolean
   onChange: (checked: boolean) => void
   id: string
+  disabled: boolean
 }
 
-export default function Checkbox({ defaultChecked, onChange, id }: ICheckboxProps) {
+export default function Checkbox({ defaultChecked, onChange, id, disabled }: ICheckboxProps) {
   const [checked, setChecked] = useState(defaultChecked)
   // const [audio] = useState(new Audio(completionSound))
   const [clickedChecked, setClickedChecked] = useState(false)
@@ -146,6 +152,8 @@ export default function Checkbox({ defaultChecked, onChange, id }: ICheckboxProp
   }, [defaultChecked])
 
   function handleChange() {
+    if (disabled) return
+
     setChecked((prevState) => {
       if (!prevState) {
         // audio.play()
@@ -165,7 +173,7 @@ export default function Checkbox({ defaultChecked, onChange, id }: ICheckboxProp
   }
 
   return (
-    <CheckboxCellStyled checked={checked} onClick={handleChange}>
+    <CheckboxCellStyled disabled={disabled} checked={checked} onClick={handleChange}>
       <div className={`c-grid-checkbox ${clickedChecked ? 'clicked-checked' : ''}`}>
         <Icon className='c-grid-checkbox-icon' width={19} height={19} iconName='CheckMark' />
       </div>
