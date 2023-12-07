@@ -4,7 +4,6 @@ import { useMemo, useRef } from 'react'
 
 import * as SC from './Chart.styled'
 import Connectors from '../Connectors/Connectors'
-// import { ITask } from '../../types'
 import Row from './Row'
 import TimeLineHeader from '../TimeLineHeader/TimeLineHeader'
 import useVirtualizationStore from '../../Store/VirtualizationStore'

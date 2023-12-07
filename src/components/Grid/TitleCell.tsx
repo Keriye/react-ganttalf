@@ -141,6 +141,10 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     [handleTaskTitleChange],
   )
 
+  const handleFocus: React.FocusEventHandler<HTMLInputElement> = useCallback(() => {
+    handleScrollToTask()
+  }, [handleScrollToTask])
+
   useEffect(() => {
     return () => {
       toggleLoading(task.id, false)
@@ -162,6 +166,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
         }}
         onKeyUp={handleEnterPress}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         value={title}
         type='text'
       />
