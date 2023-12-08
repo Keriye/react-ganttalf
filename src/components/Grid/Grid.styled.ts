@@ -242,10 +242,9 @@ export const GridRowStyled = styled.div<{
     border-bottom: 1px solid ${(props) => props.theme.themePrimary};
   }
 
-  .c-grid-row-container-drag-over,
-  .c-grid-row-container-drag-over * {
+  /* .c-grid-row-container-drag-over * {
     pointer-events: none !important;
-  }
+  } */
 
   .c-grid-add-new-task {
     display: none;

@@ -60,11 +60,13 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     event.stopPropagation()
     event.preventDefault()
 
-    const { clientY, clientX } = event
+    // const { clientY, clientX } = event
+    const { clientY } = event
 
     if (!rowRef.current) return
 
-    const { top, left, height, width } = rowRef.current.getBoundingClientRect()
+    // const { top, left, height, width } = rowRef.current.getBoundingClientRect()
+    const { top, height } = rowRef.current.getBoundingClientRect()
 
     let position = null
 
@@ -76,11 +78,11 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
       position = 'bottom'
     }
 
-    // is right side (30% of width)
-    const isRight = clientX > left + width * 0.7
-    if (isRight) {
-      position = 'right'
-    }
+    // // is right side (30% of width)
+    // const isRight = clientX > left + width * 0.7
+    // if (isRight) {
+    //   position = 'right'
+    // }
 
     setDragOverPosition(position)
   }
@@ -103,15 +105,15 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
     return className
   }
 
-  function getDragOverRightClassName() {
-    let className = 'c-grid-drag-over'
+  // function getDragOverRightClassName() {
+  //   let className = 'c-grid-drag-over'
 
-    if (dragOverPosition === 'right') {
-      className += ' c-grid-drag-over-visible'
-    }
+  //   if (dragOverPosition === 'right') {
+  //     className += ' c-grid-drag-over-visible'
+  //   }
 
-    return className
-  }
+  //   return className
+  // }
 
   function onDragEnter() {
     if (openSubTasksRef.current) return
@@ -247,9 +249,9 @@ export default function GridRow({ taskLevel, isFirstItem, isLastItem, task }: IG
         <TitleCell taskLevel={taskLevel} task={task} />
         {renderCustomColumns()}
       </div>
-      <div className={getDragOverRightClassName()}>
+      {/* <div style={{ pointerEvents: 'none' }} className={getDragOverRightClassName()}>
         <Icon className='c-grid-drag-over-icon' width={18} height={18} iconName='PaddingRight' />
-      </div>
+      </div> */}
     </SC.GridRowStyled>
   )
 }
