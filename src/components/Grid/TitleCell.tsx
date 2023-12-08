@@ -141,6 +141,11 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     [handleTaskTitleChange],
   )
 
+  const handleFocus: React.FocusEventHandler<HTMLInputElement> = useCallback(() => {
+    handleScrollToTask()
+  }, [handleScrollToTask])
+
+  // TODO: should be common value instead of function
   function shouldDisplayStatusItem() {
     if (typeof task.permissions?.updateStatus === 'boolean') {
       return task.permissions.updateStatus
@@ -170,6 +175,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
         }}
         onKeyUp={handleEnterPress}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         value={title}
         type='text'
       />

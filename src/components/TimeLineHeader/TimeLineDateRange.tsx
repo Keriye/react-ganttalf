@@ -19,6 +19,7 @@ export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRa
   const taskDays = getDatesBetween({ startDate, endDate, includeEndDate: false })
 
   const taskDaysLength = taskDays.length
+  const taskWorkingDaysLength = taskDays.filter((day) => ![6, 7].includes(DateTime.fromJSDate(day).weekday)).length
   let coefficient = Math.max(Math.round(ESTIMATED_WIDTH / columnWidth), 1)
   let visibleCount = taskDaysLength
 
@@ -56,7 +57,7 @@ export default function TimeLineDateRange({ startDate, endDate }: TimeLineDateRa
             <div>{DateTime.fromJSDate(startDate).toFormat('LLL.')}</div>
             {taskDaysLength > 1 && (
               <>
-                {taskDaysLength > 2 && <div>{taskDaysLength}</div>}
+                {taskDaysLength > 2 && <div>{taskWorkingDaysLength}</div>}
                 <div>{taskDaysLength > 2 ? DateTime.fromJSDate(endDate).toFormat('LLL.') : taskDaysLength}</div>
               </>
             )}

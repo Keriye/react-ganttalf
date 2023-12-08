@@ -224,6 +224,21 @@ function GanttChart({
 
   const virtualItems = virtualizer.getVirtualItems()
 
+  useEffect(() => {
+    return () => {
+      useTasksStore.setState({
+        interaction: {},
+        tasks: [],
+        visibleTasks: [],
+      })
+      useVirtualizationStore.setState({
+        isActive: true,
+        totalHeight: 0,
+        virtualItems: undefined,
+      })
+    }
+  }, [])
+
   //init translations store
   useEffect(() => {
     translations && setTranslations(translations)
