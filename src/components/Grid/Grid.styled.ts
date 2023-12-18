@@ -152,6 +152,7 @@ export const ButtonOverflow = styled.div`
     border: none;
     background-color: transparent;
     cursor: pointer;
+    overflow: hidden;
 
     &:hover {
       background-color: ${(props) => props.theme.neutralLighter};
@@ -161,6 +162,7 @@ export const ButtonOverflow = styled.div`
 
   .c-grid-icon-button-overflow-item-icon {
     margin-right: 8px;
+    flex: 0 0 auto;
   }
 
   .c-grid-button-overflow-divider {

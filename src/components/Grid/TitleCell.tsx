@@ -1,13 +1,11 @@
 import { ITask, TaskStatus } from '../../types'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useConfigStore, useTasksStore } from '../../Store'
+import { useTasksStore } from '../../Store'
 
 import { ActionContext } from '../GanttChart'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
-import { getDatesBetween } from '../../utils/helpers'
-import useDomStore from '../../Store/DomStore'
 import useTranslateStore from '../../Store/TranslateStore'
 
 // import useDomStore from '../../Store/DomStore'
@@ -20,7 +18,6 @@ interface ITitleCellProps {
 export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const [title, setTitle] = useState(task.title)
   const t = useTranslateStore((store) => store.t)
-  const wrapperNode = useDomStore((store) => store.wrapperNode)
 
   const {
     onTaskSelect,
@@ -28,6 +25,8 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     onTaskTitleChange,
     onTaskStatusChange,
     onSubtaskCreate,
+    onSubtaskMove,
+    onSubtaskPromote,
     onLinkDelete,
     onLoadSubTasks,
     onLinksDelete,
@@ -35,18 +34,17 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
 
   const interaction = useTasksStore((state) => state.interaction)
   const getSubTasks = useTasksStore((state) => state.getSubTasks)
+  const scrollToTask = useTasksStore((state) => state.scrollToTask)
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const toggleLoading = useTasksStore((state) => state.toggleLoading)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
-  const config = useConfigStore((state) => state.config)
+  const invalidateVersion = useTasksStore((state) => state.invalidateVersion)
 
   const isLoading = interaction[task.id]?.isLoading
 
   useEffect(() => {
     setTitle(task.title)
   }, [task.title])
-
-  const { startDate, columnWidth } = config
 
   // const wrapperNode = useDomStore((store) => store.wrapperNode)
   // const gridNode = useDomStore((store) => store.gridNode)
@@ -102,15 +100,27 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     onSubtaskCreate?.(task)
   }, [onSubtaskCreate, task, toggleCollapse])
 
+  const handleSubtaskMove = useCallback(async () => {
+    if (onSubtaskMove) {
+      await onSubtaskMove(task)
+      toggleCollapse(task.id, true)
+      invalidateVersion()
+    }
+  }, [invalidateVersion, onSubtaskMove, task, toggleCollapse])
+
+  const handleSubtaskPromote = useCallback(async () => {
+    if (onSubtaskPromote) {
+      await onSubtaskPromote(task)
+      toggleCollapse(task.id, true)
+      invalidateVersion()
+    }
+  }, [invalidateVersion, onSubtaskPromote, task, toggleCollapse])
+
   const handleScrollToTask = useCallback(() => {
     if (!task.startDate) return
 
-    const diff = getDatesBetween({ startDate, endDate: task.startDate }).length
-    const gridNode = document.querySelector('#react-ganttalf-grid')
-    const scrollLeft = diff * columnWidth - (gridNode?.clientWidth ?? 350) - 80
-
-    wrapperNode?.scrollTo(scrollLeft, wrapperNode.scrollTop)
-  }, [columnWidth, startDate, task.startDate, wrapperNode])
+    scrollToTask(task.startDate)
+  }, [scrollToTask, task?.startDate])
 
   const handleTaskTitleChange = useCallback(
     async (value: string) => {
@@ -197,17 +207,27 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
               onClick: handleTaskSelect,
             },
             {
-              iconName: 'PaddingRight',
+              iconName: 'Insert',
               key: 'Subtusk',
-              text: t('menu.make.subtask'),
+              text: t('menu.create.subtask'),
               onClick: handleSubtaskCreate,
             },
-            // {
-            //   iconName: 'PaddingLeft',
-            //   key: 'Promote',
-            //   text: t('menu.promote.subtask'),
-            //   onClick: handleSubtaskCreate,
-            // },
+            {
+              iconName: 'PaddingRight',
+              key: 'SubtuskMove',
+              text: t('menu.make.subtask'),
+              onClick: handleSubtaskMove,
+            },
+            ...(task.parentTaskId && interaction[task.parentTaskId]
+              ? [
+                  {
+                    iconName: 'PaddingLeft',
+                    key: 'Promote',
+                    text: t('menu.promote.subtask'),
+                    onClick: handleSubtaskPromote,
+                  },
+                ]
+              : []),
             { key: 'devider-1', type: 'divider' },
             // {
             //   iconName: 'Cut',
