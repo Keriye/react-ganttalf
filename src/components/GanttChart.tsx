@@ -8,7 +8,7 @@ import { useVirtualizer, elementScroll, type VirtualizerOptions } from '@tanstac
 import * as SC from './GanttChart.styled'
 import Grid from './Grid/Grid'
 import { ThemeProvider } from 'styled-components'
-import React, { JSX, useCallback, useEffect, useMemo } from 'react'
+import React, { JSX, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import useTranslateStore, { TranslateStore } from '../Store/TranslateStore'
 import useVirtualizationStore from '../Store/VirtualizationStore'
 import useDomStore from '../Store/DomStore'
@@ -31,6 +31,8 @@ export type GanttChartProps = {
   onTaskCreate?: (task: Partial<ITask>) => Promise<boolean>
   onTaskDelete?: (task: Partial<ITask>) => void
   onSubtaskCreate?: (task: Partial<ITask>) => void
+  onSubtaskPromote?: (task: ITask) => Promise<boolean>
+  onSubtaskMove?: (task: ITask) => Promise<boolean>
   onTaskAppend?: (task: Partial<ITask>, options?: { replace?: boolean }) => void
   onTaskSelect?: (task: ITask) => void
   onTaskStatusChange?: (data: { value: boolean; taskId: string }) => void
@@ -48,6 +50,7 @@ export type GanttChartProps = {
   columnsRenderer?: Record<string, ColumnRenderer>
   columnsOrder?: Array<keyof NonNullable<GanttChartProps['columnsRenderer']>>
   virtualization?: undefined
+  inProgress?: boolean
 }
 
 const startDate = DateTime.local().minus({ days: 15 }).toJSDate()
@@ -98,6 +101,8 @@ export const ActionContext = React.createContext<
     | 'onLinkDelete'
     | 'onLinksDelete'
     | 'onSubtaskCreate'
+    | 'onSubtaskPromote'
+    | 'onSubtaskMove'
     | 'onTaskAppend'
     | 'onTaskCreate'
     | 'onTaskDelete'
@@ -115,6 +120,7 @@ export const ActionContext = React.createContext<
 const easeInOutQuint = (t: number) => (t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t)
 
 function GanttChart({
+  inProgress,
   columnsOrder,
   columnsRenderer,
   config = defaultConfig,
@@ -123,6 +129,8 @@ function GanttChart({
   onLinkDelete,
   onLinksDelete,
   onSubtaskCreate,
+  onSubtaskMove,
+  onSubtaskPromote,
   onTaskAppend,
   onTaskCreate,
   onTaskDelete,
@@ -142,12 +150,14 @@ function GanttChart({
   const interaction = useTasksStore((state) => state.interaction)
   const setTasks = useTasksStore((state) => state.setTasks)
   const setVisibleTasks = useTasksStore((state) => state.setVisibleTasks)
+  const scrollToTask = useTasksStore((state) => state.scrollToTask)
   const setConfig = useConfigStore((state) => state.setConfig)
   const setTranslations = useTranslateStore((state) => state.setTranslations)
   const setVirtualData = useVirtualizationStore((store) => store.setVirtualData)
   const [wrapperNode, setWrapperNode] = useDomStore((state) => [state.wrapperNode, state.setWrapperNode])
   const [modalShift, setModalNode] = useDomStore((state) => [state.modalShift, state.setModalNode])
 
+  const [isInitialized, setIsInitialized] = useState(false)
   const scrollingRef = React.useRef<number>()
 
   const { rowHeight } = storeConfig
@@ -265,7 +275,18 @@ function GanttChart({
     })
 
     setTasks(convertTasksDates(initTasks)?.sort((a, b) => a.sortOrder - b.sortOrder))
+    initTasks?.length && setIsInitialized(true)
   }, [config, initTasks, setTasks, setConfig])
+
+  useLayoutEffect(() => {
+    if (isInitialized) {
+      if (inProgress) {
+        scrollToTask()
+      } else if (tasks?.[0]?.startDate) {
+        scrollToTask(tasks[0].startDate)
+      }
+    }
+  }, [isInitialized, inProgress, scrollToTask])
 
   async function loadSubTasks(task: ITask) {
     if (onLoadSubTasks) {
@@ -292,6 +313,8 @@ function GanttChart({
           onLinkDelete,
           onLinksDelete,
           onSubtaskCreate,
+          onSubtaskMove,
+          onSubtaskPromote,
           onTaskAppend,
           onTaskCreate,
           onTaskDelete,
@@ -303,12 +326,7 @@ function GanttChart({
         }}
       >
         <SC.Wrapper>
-          <SC.ScrollWrapper
-            ref={setWrapperNode}
-            className='ganttalf-wrapper'
-            id='react-ganttalf'
-            // onScroll={handleOnScroll}
-          >
+          <SC.ScrollWrapper ref={setWrapperNode} className='ganttalf-wrapper' id='react-ganttalf'>
             <Chart />
             <Grid />
             <AddTaskButton />

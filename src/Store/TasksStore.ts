@@ -1,6 +1,8 @@
 import { ITask } from '../types'
 import { create } from 'zustand'
-import { getTemplatedTask } from '../utils/helpers'
+import { getDatesBetween, getTemplatedTask } from '../utils/helpers'
+import { useConfigStore } from './index'
+import useDomStore from './DomStore'
 
 type TasksStore = {
   tasks: ITask[]
@@ -25,6 +27,7 @@ type TasksStore = {
   ) => void
   updateTask: (task: ITask) => void
   deleteTask: (id: string) => void
+  scrollToTask: (date?: Date | string) => void
   toggleCollapse: (id: string, value?: boolean) => void
   toggleLoading: (id: string, value?: boolean) => void
   onStatusChange: (checked: boolean, id: string) => void
@@ -106,18 +109,17 @@ const useTasksStore = create<TasksStore>()((set) => ({
     set(({ tasks }) => ({
       tasks: tasks.filter((t) => t.id !== id),
     })),
-  // toggleCollapse: (id) =>
-  //   set(({ tasks }) => {
-  //     return {
-  //       tasks: tasks.map((t) => {
-  //         if (t.id === id) {
-  //           return { ...t, collapsed: !t.collapsed }
-  //         }
-  //
-  //         return t
-  //       }),
-  //     }
-  //   }),
+  scrollToTask: (date) => {
+    const scrollDate = date || new Date()
+
+    const config = useConfigStore.getState().config
+    const diff = getDatesBetween({ startDate: config.startDate, endDate: scrollDate }).length
+    const gridNode = document.querySelector('#react-ganttalf-grid')
+    const scrollLeft = diff * config.columnWidth - (gridNode?.clientWidth ?? 350) - 80
+
+    const wrapperNode = useDomStore.getState().wrapperNode
+    wrapperNode?.scrollTo(scrollLeft, wrapperNode.scrollTop)
+  },
   toggleCollapse: (id, value) =>
     set(({ interaction }) => {
       return {

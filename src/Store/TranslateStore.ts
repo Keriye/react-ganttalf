@@ -12,6 +12,7 @@ const defaultTranslations = {
   'menu.delete.links': 'Delete links',
   'menu.status.complete': 'Complete task',
   'menu.status.reactivate': 'Reactivate task',
+  'menu.create.subtask': 'Create subtask',
   'menu.make.subtask': 'Make subtask',
   'menu.promote.subtask': 'Promote subtask',
 }
