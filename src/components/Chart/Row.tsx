@@ -334,6 +334,7 @@ function Row({ task }: IRowProps) {
 
     return (
       <SC.Task
+        title={task.title}
         isParentTask={isParentTask}
         ref={taskRef}
         id={'task-bar-' + task.id}
