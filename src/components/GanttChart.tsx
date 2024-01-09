@@ -41,6 +41,7 @@ export type GanttChartProps = {
   onLinkDelete?: (sourceId: string, targetId: string) => void
   onLinksDelete?: (sourceId: string) => void
   onLoadSubTasks?: (task: ITask) => Promise<ITask[]>
+  onRenderGrid?: (tasks: ITask[]) => JSX.Element
   config?: IConfig
   theme?: ITheme
   tasks?: ITask[]
@@ -118,10 +119,11 @@ function GanttChart({
   columnsOrder,
   columnsRenderer,
   config = defaultConfig,
-  onLoadSubTasks,
   onLinkCreate,
   onLinkDelete,
   onLinksDelete,
+  onLoadSubTasks,
+  onRenderGrid,
   onSubtaskCreate,
   onTaskAppend,
   onTaskCreate,
@@ -310,7 +312,7 @@ function GanttChart({
             // onScroll={handleOnScroll}
           >
             <Chart />
-            <Grid />
+            {onRenderGrid ? onRenderGrid(tasks) : <Grid />}
             <AddTaskButton />
           </SC.ScrollWrapper>
           <SC.ModalWrapper ref={setModalNode} {...modalShift} />
