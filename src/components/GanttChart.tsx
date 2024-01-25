@@ -27,6 +27,26 @@ type ColumnRenderer = {
 }
 
 export type GanttChartProps = {
+  onRenderGrid?: (
+    tasks: ITask[],
+    actions: {
+      interaction?: Record<
+        string,
+        {
+          expanded?: boolean
+          isLoading?: boolean
+          parentId?: string
+          sortOrder: number
+        }
+      >
+      scrollToTask?: () => void
+      toggleCollapse?: (id: string, value?: boolean) => void
+      invalidateVersion?: () => void
+      getSubTasks?: (ids: string[]) => ITask[]
+      addTask?: (task: Partial<ITask>, options?: { sourceId?: string; position?: 'before' | 'after' }) => void
+      tasks?: ITask[]
+    },
+  ) => React.ReactNode
   onTaskDatesChange?: () => void
   onTaskCreate?: (task: Partial<ITask>) => Promise<boolean>
   onTaskDelete?: (task: Partial<ITask>) => void
@@ -123,6 +143,7 @@ function GanttChart({
   inProgress,
   columnsOrder,
   columnsRenderer,
+  onRenderGrid,
   config = defaultConfig,
   onLoadSubTasks,
   onLinkCreate,
@@ -218,18 +239,12 @@ function GanttChart({
     [wrapperNode],
   )
 
-  // const getItemKey = useCallback((index: number) => visibleTasks[index]?.id ?? index, [visibleTasks])
-
   const virtualizer = useVirtualizer({
     count: visibleTasks?.length,
     getScrollElement: () => (virtualization ? wrapperNode : null),
     estimateSize: () => rowHeight,
     overscan: 25,
     scrollToFn,
-    // getItemKey,
-    // scrollPaddingStart: 10,
-    // scrollPaddingEnd: 10,
-    // scrollingDelay: 1000,
   })
 
   const virtualItems = virtualizer.getVirtualItems()
@@ -328,7 +343,7 @@ function GanttChart({
         <SC.Wrapper>
           <SC.ScrollWrapper ref={setWrapperNode} className='ganttalf-wrapper' id='react-ganttalf'>
             <Chart />
-            <Grid />
+            <Grid onRenderGrid={onRenderGrid} />
             <AddTaskButton />
           </SC.ScrollWrapper>
           <SC.ModalWrapper ref={setModalNode} {...modalShift} />
