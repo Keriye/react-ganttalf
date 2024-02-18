@@ -24,6 +24,7 @@ export interface ITask {
   title?: string
   type?: TaskType
   collapsed?: boolean
+  expanded?: boolean
   parentTaskId?: string
   permissions?: {
     updateStatus?: boolean

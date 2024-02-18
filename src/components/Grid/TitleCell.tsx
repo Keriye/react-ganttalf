@@ -1,11 +1,11 @@
 import { ITask, TaskStatus } from '../../types'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useTasksStore } from '../../Store'
 
 import { ActionContext } from '../GanttChart'
 import Icon from './SvgIcon'
 import IconButton from './IconButton'
 import { TitleCellStyled } from './Grid.styled'
+import { useTasksStore } from '../../Store'
 import useTranslateStore from '../../Store/TranslateStore'
 
 // import useDomStore from '../../Store/DomStore'
@@ -25,8 +25,8 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     onTaskTitleChange,
     onTaskStatusChange,
     onSubtaskCreate,
-    onSubtaskMove,
-    onSubtaskPromote,
+    // onSubtaskMove,
+    // onSubtaskPromote,
     onLinkDelete,
     onLoadSubTasks,
     onLinksDelete,
@@ -38,7 +38,7 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
   const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
   const toggleLoading = useTasksStore((state) => state.toggleLoading)
   const onStatusChange = useTasksStore((state) => state.onStatusChange)
-  const invalidateVersion = useTasksStore((state) => state.invalidateVersion)
+  // const invalidateVersion = useTasksStore((state) => state.invalidateVersion)
 
   const isLoading = interaction[task.id]?.isLoading
 
@@ -100,21 +100,21 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
     onSubtaskCreate?.(task)
   }, [onSubtaskCreate, task, toggleCollapse])
 
-  const handleSubtaskMove = useCallback(async () => {
-    if (onSubtaskMove) {
-      await onSubtaskMove(task)
-      toggleCollapse(task.id, true)
-      invalidateVersion()
-    }
-  }, [invalidateVersion, onSubtaskMove, task, toggleCollapse])
+  // const handleSubtaskMove = useCallback(async () => {
+  //   if (onSubtaskMove) {
+  //     await onSubtaskMove(task)
+  //     toggleCollapse(task.id, true)
+  //     invalidateVersion()
+  //   }
+  // }, [invalidateVersion, onSubtaskMove, task, toggleCollapse])
 
-  const handleSubtaskPromote = useCallback(async () => {
-    if (onSubtaskPromote) {
-      await onSubtaskPromote(task)
-      toggleCollapse(task.id, true)
-      invalidateVersion()
-    }
-  }, [invalidateVersion, onSubtaskPromote, task, toggleCollapse])
+  // const handleSubtaskPromote = useCallback(async () => {
+  //   if (onSubtaskPromote) {
+  //     await onSubtaskPromote(task)
+  //     toggleCollapse(task.id, true)
+  //     invalidateVersion()
+  //   }
+  // }, [invalidateVersion, onSubtaskPromote, task, toggleCollapse])
 
   const handleScrollToTask = useCallback(() => {
     if (!task.startDate) return
@@ -209,25 +209,25 @@ export default function TitleCell({ taskLevel, task }: ITitleCellProps) {
             {
               iconName: 'Insert',
               key: 'Subtusk',
-              text: t('menu.create.subtask'),
+              text: t('menu.make.subtask'),
               onClick: handleSubtaskCreate,
             },
-            {
-              iconName: 'PaddingRight',
-              key: 'SubtuskMove',
-              text: t('menu.make.subtask'),
-              onClick: handleSubtaskMove,
-            },
-            ...(task.parentTaskId && interaction[task.parentTaskId]
-              ? [
-                  {
-                    iconName: 'PaddingLeft',
-                    key: 'Promote',
-                    text: t('menu.promote.subtask'),
-                    onClick: handleSubtaskPromote,
-                  },
-                ]
-              : []),
+            // {
+            //   iconName: 'PaddingRight',
+            //   key: 'SubtuskMove',
+            //   text: t('menu.make.subtask'),
+            //   onClick: handleSubtaskMove,
+            // },
+            // ...(task.parentTaskId && interaction[task.parentTaskId]
+            //   ? [
+            //       {
+            //         iconName: 'PaddingLeft',
+            //         key: 'Promote',
+            //         text: t('menu.promote.subtask'),
+            //         onClick: handleSubtaskPromote,
+            //       },
+            //     ]
+            //   : []),
             { key: 'devider-1', type: 'divider' },
             // {
             //   iconName: 'Cut',

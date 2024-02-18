@@ -20,7 +20,7 @@ export const Wrapper = styled.div<{ isResizing?: boolean; totalHeight?: number }
   left: 0;
   width: min-content;
   height: ${({ totalHeight }) => (totalHeight ? `${totalHeight}px` : 'unset')};
-  min-width: 350px;
+  min-width: 456px;
   max-width: 90%;
   z-index: 110;
   ${({ isResizing }) =>

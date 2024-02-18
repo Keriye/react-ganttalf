@@ -168,7 +168,6 @@ function GanttChart({
   const storeConfig = useConfigStore((state) => state.config)
 
   const tasks = useTasksStore((state) => state.tasks)
-  const interaction = useTasksStore((state) => state.interaction)
   const setTasks = useTasksStore((state) => state.setTasks)
   const setVisibleTasks = useTasksStore((state) => state.setVisibleTasks)
   const scrollToTask = useTasksStore((state) => state.scrollToTask)
@@ -185,15 +184,15 @@ function GanttChart({
 
   const checkParentVisibility = useCallback(
     (id?: string): boolean => {
-      const parent = id ? interaction[id] : undefined
+      const parentTask = tasks.find((task) => task.id === id)
 
-      if (!parent) return true
+      if (!parentTask) return true
 
-      if (!parent?.expanded) return false
+      if (!parentTask?.expanded) return false
 
-      return checkParentVisibility(parent.parentId)
+      return checkParentVisibility(parentTask?.parentTaskId)
     },
-    [interaction],
+    [tasks],
   )
 
   function convertTasksDates(tasks: ITask[]): ITask[] {
