@@ -1,11 +1,12 @@
-import { getDatesBetween } from '../../utils/helpers'
+import * as SC from './Chart.styled'
+
 import { useConfigStore, useTasksStore } from '../../Store'
 import { useMemo, useRef } from 'react'
 
-import * as SC from './Chart.styled'
 import Connectors from '../Connectors/Connectors'
 import Row from './Row'
 import TimeLineHeader from '../TimeLineHeader/TimeLineHeader'
+import { getDatesBetween } from '../../utils/helpers'
 import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 function Chart() {
@@ -75,8 +76,8 @@ function Chart() {
         <SC.ChartContainer id='react-ganttalf-tasks-container' segmentWidth={columnWidth * 7}>
           <Connectors tasks={tasksToDisplay} />
           {virtualItems && <div className='placeholder' style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
-          {tasksToDisplay.map((task) => (
-            <Row key={task.id} task={task} />
+          {tasksToDisplay.map((task, index) => (
+            <Row key={task.id} task={task} index={index} />
           ))}
           {virtualItems && (
             <div className='placeholder' style={{ height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px` }} />

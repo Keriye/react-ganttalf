@@ -7,6 +7,7 @@ export const Wrapper = styled.div`
   line-height: 20px;
   position: relative;
   max-height: 100%;
+  height: 100%;
   width: 100%;
   color: ${({ theme }) => theme.neutralPrimary};
 

@@ -14,9 +14,10 @@ import useInteractionStore from '../../Store/InteractionStore'
 
 interface IRowProps {
   task: ITask
+  index: number
 }
 
-function Row({ task }: IRowProps) {
+function Row({ task, index }: IRowProps) {
   const config = useConfigStore((state) => state.config)
   const onTaskDateChange = useTasksStore((state) => state.onTaskDateChange)
   const headerNode = useDomStore((state) => state.headerNode)
@@ -317,6 +318,7 @@ function Row({ task }: IRowProps) {
         <SC.MileStone
           isParentTask={isParentTask}
           ref={taskRef}
+          data-index={index}
           id={'task-bar-' + task.id}
           daysFromStart={daysFromStart.length}
           columnWidth={columnWidth}
@@ -337,6 +339,7 @@ function Row({ task }: IRowProps) {
         title={task.title}
         isParentTask={isParentTask}
         ref={taskRef}
+        data-index={index}
         id={'task-bar-' + task.id}
         daysFromStart={daysFromStart.length}
         daysLength={taskDays.length}
