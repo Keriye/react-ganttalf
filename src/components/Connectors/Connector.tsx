@@ -16,7 +16,7 @@ type ConnectorProps = {
   flatEnd?: boolean
 }
 
-export default function Connector({ startId, endId, mousePosition, hiddenItems, flatStart }: ConnectorProps) {
+export default function Connector({ startId, endId, hiddenItems, mousePosition, flatStart }: ConnectorProps) {
   const config = useConfigStore((state) => state.config)
   const isCommon = !hiddenItems && !mousePosition
 
@@ -28,7 +28,13 @@ export default function Connector({ startId, endId, mousePosition, hiddenItems, 
   const [initialized, setInitialized] = useState(false)
   const { rowHeight } = config
 
-  const coordsStart = useResizeObserver({ taskElement: element1, rowHeight, startElement: true, isFlat: flatStart })
+  const coordsStart = useResizeObserver({
+    taskElement: element1,
+    rowHeight,
+    startId,
+    startElement: true,
+    isFlat: flatStart,
+  })
   const coordsEnd = useResizeObserver({ taskElement: element2, rowHeight, startElement: false, isFlat: true })
 
   useLayoutEffect(() => {
@@ -50,13 +56,25 @@ export default function Connector({ startId, endId, mousePosition, hiddenItems, 
     }
   }, [initialized, startId, endId, isCommon])
 
-  if (!initialized) return null
+  if (!initialized) {
+    return null
+  }
 
-  if (isCommon && (!element1.current || !element2.current)) return null
+  if (isCommon && (!element1.current || !element2.current)) {
+    return null
+  }
 
-  if (isCommon && (!coordsEnd || !coordsStart)) return null
+  if (isCommon && (!coordsEnd || !coordsStart)) {
+    return null
+  }
 
-  if (!isCommon && !coordsStart && !coordsEnd) return null
+  if (!isCommon && !coordsStart && !coordsEnd) {
+    return null
+  }
+
+  if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
+    console.timeEnd('getCoords')
+  }
 
   const startPoint = (coordsStart || { ...coordsEnd, x: coordsEnd!.x - 40 }) as { x: number; y: number }
   const endPoint = (coordsEnd || mousePosition || { ...coordsStart, x: coordsStart!.x + 40 }) as {

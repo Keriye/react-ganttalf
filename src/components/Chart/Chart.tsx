@@ -10,7 +10,7 @@ import { getDatesBetween } from '../../utils/helpers'
 import useVirtualizationStore from '../../Store/VirtualizationStore'
 
 function Chart() {
-  // const tasks = useTasksStore((state) => state.tasks)
+  const tasks = useTasksStore((state) => state.tasks)
   const visibleTasks = useTasksStore((state) => state.visibleTasks)
   // const interaction = useTasksStore((state) => state.interaction)
   const virtualItems = useVirtualizationStore((state) => state.virtualItems)
@@ -77,14 +77,14 @@ function Chart() {
       <SC.ChartWrapper ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
         <SC.TodayIndicator indicatorPosition={todayIndicatorPosition} />
         <SC.ChartContainer id='react-ganttalf-tasks-container' segmentWidth={columnWidth * 7}>
-          {virtualItems && <div className='placeholder' style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
-          {tasksToDisplay.map((task, index) => (
+          {/* {virtualItems && <div className='placeholder' style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />} */}
+          {visibleTasks.map((task, index) => (
             <Row key={task.id} indexKey={index} task={task} />
           ))}
-          {virtualItems && (
+          {/* {virtualItems && (
             <div className='placeholder' style={{ height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px` }} />
-          )}
-          <Connectors tasks={tasksToDisplay} />
+          )} */}
+          <Connectors tasks={visibleTasks} />
         </SC.ChartContainer>
       </SC.ChartWrapper>
     </>

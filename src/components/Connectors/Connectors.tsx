@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import Connector from './Connector'
 import { ConnectorsStyled } from './Connectors.styled'
 import { ITask } from '../../types'
+import { useTasksStore } from '../../Store'
 
 type ConnectorsProps = {
   tasks: ITask[]
@@ -18,6 +19,8 @@ interface IConnector {
 }
 
 const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
+  const visibleTasks = useTasksStore((state) => state.visibleTasks)
+
   const connectors = useMemo(() => {
     if (!tasks?.length) return []
 
@@ -27,22 +30,23 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
       let amountOfHiddenSuccessors = 0
       let amountOfHiddenPredecessors = 0
 
-      const successorConnetions =
-        successors?.map((successor) => {
-          const successorTask = tasks.find(({ id }) => id === successor)
+      const connections: IConnector[] = []
 
-          if (!successorTask) {
-            amountOfHiddenSuccessors++
-          }
+      successors?.forEach((successor) => {
+        const successorTask = tasks.find(({ id }) => id === successor)
 
-          return {
+        if (!successorTask) {
+          amountOfHiddenSuccessors++
+        } else {
+          connections.push({
             taskId: task.id,
             flatStart: task.type === 2 || !!task.subTaskIds?.length,
             flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
             successor,
             key: `${task.id}-${successor}`,
-          }
-        }) ?? []
+          })
+        }
+      })
 
       predecessors?.forEach((predecessor) => {
         const predecessorTask = tasks.find(({ id }) => id === predecessor)
@@ -52,33 +56,29 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
         }
       })
 
-      return [
-        ...successorConnetions,
-        ...(amountOfHiddenSuccessors
-          ? [
-              {
-                taskId: task.id,
-                flatStart: true,
-                flatEnd: true,
-                hiddenItems: amountOfHiddenSuccessors,
-                successor: 'hidden',
-                key: `${task.id}-hidden`,
-              },
-            ]
-          : []),
-        ...(amountOfHiddenPredecessors
-          ? [
-              {
-                taskId: 'hidden',
-                flatStart: true,
-                flatEnd: true,
-                hiddenItems: amountOfHiddenPredecessors,
-                successor: task.id,
-                key: `hidden-${task.id}`,
-              },
-            ]
-          : []),
-      ]
+      if (amountOfHiddenSuccessors) {
+        connections.push({
+          taskId: task.id,
+          flatStart: true,
+          flatEnd: true,
+          hiddenItems: amountOfHiddenSuccessors,
+          successor: 'hidden',
+          key: `${task.id}-hidden`,
+        })
+      }
+
+      if (amountOfHiddenPredecessors) {
+        connections.push({
+          taskId: 'hidden',
+          flatStart: true,
+          flatEnd: true,
+          hiddenItems: amountOfHiddenPredecessors,
+          successor: task.id,
+          key: `hidden-${task.id}`,
+        })
+      }
+
+      return connections
     })
   }, [tasks])
 
