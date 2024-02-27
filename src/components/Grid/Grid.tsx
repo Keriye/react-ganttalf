@@ -1,28 +1,24 @@
 import * as SC from './Grid.styled'
+
+import React, { useMemo } from 'react'
+
+import { GanttChartProps } from '../GanttChart'
 import GridRow from './GridRow'
 import { ITask } from '../../types'
 import { findParentTask } from '../../utils/helpers'
-import { useTasksStore } from '../../Store'
 import useHorizontalResize from '../../hooks/useHorizontalResize'
+import { useTasksStore } from '../../Store'
 import useVirtualizationStore from '../../Store/VirtualizationStore'
-import { GanttChartProps } from '../GanttChart'
-import React, { useMemo } from 'react'
 
 type GridProps = {
-  onRenderGrid: GanttChartProps['onRenderGrid']
+  customGrid: GanttChartProps['customGrid']
 }
 
-const Grid: React.FC<GridProps> = ({ onRenderGrid }) => {
+const Grid: React.FC<GridProps> = ({ customGrid }) => {
   const { containerRef, isResizing, handleResizeStart } = useHorizontalResize()
 
   const tasks = useTasksStore((state) => state.tasks)
-  const addTask = useTasksStore((state) => state.addTask)
-  const interaction = useTasksStore((state) => state.interaction)
   const visibleTasks = useTasksStore((state) => state.visibleTasks)
-  const scrollToTask = useTasksStore((state) => state.scrollToTask)
-  const toggleCollapse = useTasksStore((state) => state.toggleCollapse)
-  const invalidateVersion = useTasksStore((state) => state.invalidateVersion)
-  const getSubTasks = useTasksStore((state) => state.getSubTasks)
   const totalHeight = useVirtualizationStore((state) => state.totalHeight)
   const virtualItems = useVirtualizationStore((state) => state.virtualItems)
 
@@ -66,17 +62,7 @@ const Grid: React.FC<GridProps> = ({ onRenderGrid }) => {
       {virtualItems && (
         <div style={{ height: `${virtualItems[0]?.start ?? 0}px`, width: '100%', backgroundColor: 'white' }} />
       )}
-      {onRenderGrid
-        ? onRenderGrid(tasksToDisplay, {
-            interaction,
-            scrollToTask,
-            toggleCollapse,
-            invalidateVersion,
-            getSubTasks,
-            addTask,
-            tasks,
-          })
-        : tasksToDisplay.map(renderRow)}
+      {customGrid ? customGrid : tasksToDisplay.map(renderRow)}
       {virtualItems && (
         <div
           style={{

@@ -71,6 +71,7 @@ export type GanttChartProps = {
   columnsOrder?: Array<keyof NonNullable<GanttChartProps['columnsRenderer']>>
   virtualization?: undefined
   inProgress?: boolean
+  customGrid?: React.ReactNode
 }
 
 const startDate = DateTime.local().minus({ days: 15 }).toJSDate()
@@ -143,7 +144,6 @@ function GanttChart({
   inProgress,
   columnsOrder,
   columnsRenderer,
-  onRenderGrid,
   config = defaultConfig,
   onLoadSubTasks,
   onLinkCreate,
@@ -164,6 +164,7 @@ function GanttChart({
   theme = defaultTheme,
   translations,
   virtualization,
+  customGrid,
 }: GanttChartProps) {
   const storeConfig = useConfigStore((state) => state.config)
 
@@ -182,19 +183,6 @@ function GanttChart({
 
   const { rowHeight } = storeConfig
 
-  const checkParentVisibility = useCallback(
-    (id?: string): boolean => {
-      const parentTask = tasks.find((task) => task.id === id)
-
-      if (!parentTask) return true
-
-      if (!parentTask?.expanded) return false
-
-      return checkParentVisibility(parentTask?.parentTaskId)
-    },
-    [tasks],
-  )
-
   function convertTasksDates(tasks: ITask[]): ITask[] {
     return tasks.map((task) => ({
       ...task,
@@ -204,8 +192,9 @@ function GanttChart({
   }
 
   const visibleTasks = useMemo(
-    () => tasks?.filter(({ parentTaskId }) => checkParentVisibility(parentTaskId)),
-    [checkParentVisibility, tasks],
+    // () => tasks?.filter(({ parentTaskId }) => checkParentVisibility(parentTaskId)),
+    () => tasks?.filter(({ hidden }) => !hidden),
+    [tasks],
   )
 
   useEffect(() => {
@@ -342,7 +331,8 @@ function GanttChart({
         <SC.Wrapper>
           <SC.ScrollWrapper ref={setWrapperNode} className='ganttalf-wrapper' id='react-ganttalf'>
             <Chart />
-            <Grid onRenderGrid={onRenderGrid} />
+            <Grid customGrid={customGrid} />
+
             <AddTaskButton />
           </SC.ScrollWrapper>
           <SC.ModalWrapper ref={setModalNode} {...modalShift} />

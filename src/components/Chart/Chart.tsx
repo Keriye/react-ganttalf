@@ -56,17 +56,20 @@ function Chart() {
     [virtualItems, visibleTasks],
   )
 
+  const todayIndicatorPosition = useMemo(() => {
+    return (
+      getDatesBetween({
+        startDate,
+        endDate: new Date(),
+      }).length *
+        columnWidth -
+      columnWidth
+    )
+  }, [startDate, columnWidth])
+
   if (!days) return
 
   const chartWidth = days.length * columnWidth
-
-  const todayIndicatorPosition =
-    getDatesBetween({
-      startDate,
-      endDate: new Date(),
-    }).length *
-      columnWidth -
-    columnWidth
 
   return (
     <>
@@ -74,14 +77,14 @@ function Chart() {
       <SC.ChartWrapper ref={chartRef} id='react-ganttalf-chart' width={chartWidth}>
         <SC.TodayIndicator indicatorPosition={todayIndicatorPosition} />
         <SC.ChartContainer id='react-ganttalf-tasks-container' segmentWidth={columnWidth * 7}>
-          <Connectors tasks={tasksToDisplay} />
           {virtualItems && <div className='placeholder' style={{ height: `${virtualItems[0]?.start ?? 0}px` }} />}
           {tasksToDisplay.map((task, index) => (
-            <Row key={task.id} task={task} index={index} />
+            <Row key={task.id} indexKey={index} task={task} />
           ))}
           {virtualItems && (
             <div className='placeholder' style={{ height: `${totalHeight - (virtualItems.at(-1)?.end ?? 0)}px` }} />
           )}
+          <Connectors tasks={tasksToDisplay} />
         </SC.ChartContainer>
       </SC.ChartWrapper>
     </>

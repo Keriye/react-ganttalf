@@ -1,6 +1,6 @@
 import * as SC from './Chart.styled'
 
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
 import { useConfigStore, useTasksStore } from '../../Store'
 
@@ -14,10 +14,10 @@ import useInteractionStore from '../../Store/InteractionStore'
 
 interface IRowProps {
   task: ITask
-  index: number
+  indexKey: number
 }
 
-function Row({ task, index }: IRowProps) {
+function Row({ task, indexKey }: IRowProps) {
   const config = useConfigStore((state) => state.config)
   const onTaskDateChange = useTasksStore((state) => state.onTaskDateChange)
   const headerNode = useDomStore((state) => state.headerNode)
@@ -53,18 +53,19 @@ function Row({ task, index }: IRowProps) {
         endDate: task.startDate as Date,
         includeEndDate: false,
       }),
-    [startDate, task.startDate],
+    // use JSON.stringify to compare dates because in js Date is an object and it's always a new object
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(startDate), JSON.stringify(task.startDate)],
   )
 
-  const taskDays = useMemo(
-    () =>
-      getDatesBetween({
-        startDate: task.startDate as Date,
-        endDate: task.endDate as Date,
-        includeEndDate: false,
-      }),
-    [task.startDate, task.endDate],
-  )
+  const taskDays = useMemo(() => {
+    return getDatesBetween({
+      startDate: task.startDate as Date,
+      endDate: task.endDate as Date,
+      includeEndDate: false,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(task.startDate), JSON.stringify(task.endDate)])
 
   useEffect(() => {
     if (taskRef.current) {
@@ -318,7 +319,7 @@ function Row({ task, index }: IRowProps) {
         <SC.MileStone
           isParentTask={isParentTask}
           ref={taskRef}
-          data-index={index}
+          data-index={indexKey}
           id={'task-bar-' + task.id}
           daysFromStart={daysFromStart.length}
           columnWidth={columnWidth}
@@ -339,7 +340,7 @@ function Row({ task, index }: IRowProps) {
         title={task.title}
         isParentTask={isParentTask}
         ref={taskRef}
-        data-index={index}
+        data-index={indexKey}
         id={'task-bar-' + task.id}
         daysFromStart={daysFromStart.length}
         daysLength={taskDays.length}
@@ -414,4 +415,20 @@ function Row({ task, index }: IRowProps) {
   )
 }
 
-export default Row
+export default memo(Row, (prevProps, nextProps) => {
+  const prevEndDate = JSON.stringify(prevProps.task.endDate)
+  const nextEndDate = JSON.stringify(nextProps.task.endDate)
+  const prevStartDate = JSON.stringify(prevProps.task.startDate)
+  const nextStartDate = JSON.stringify(nextProps.task.startDate)
+
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevEndDate === nextEndDate &&
+    prevStartDate === nextStartDate &&
+    prevProps.task.type === nextProps.task.type &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.subTaskIds?.length === nextProps.task.subTaskIds?.length &&
+    prevProps.indexKey === nextProps.indexKey &&
+    prevProps.task.status === nextProps.task.status
+  )
+})

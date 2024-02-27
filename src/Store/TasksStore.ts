@@ -1,6 +1,7 @@
+import { getDatesBetween, getTemplatedTask } from '../utils/helpers'
+
 import { ITask } from '../types'
 import { create } from 'zustand'
-import { getDatesBetween, getTemplatedTask } from '../utils/helpers'
 import { useConfigStore } from './index'
 import useDomStore from './DomStore'
 
@@ -47,10 +48,13 @@ const useTasksStore = create<TasksStore>()((set) => ({
     set(({ interaction }) => {
       const updatedInteraction: TasksStore['interaction'] = {}
 
-      tasks.forEach(({ id, parentTaskId, sortOrder }) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      tasks.forEach(({ expanded, id, parentTaskId, sortOrder }) => {
+        const expandedInteraction = expanded || !!interaction[id]?.expanded
         updatedInteraction[id] = {
           ...interaction[id],
-          expanded: interaction[id]?.expanded ?? false,
+          expanded: expandedInteraction,
           parentId: parentTaskId,
           sortOrder,
         }

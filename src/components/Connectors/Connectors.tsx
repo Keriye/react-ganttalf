@@ -3,7 +3,6 @@ import React, { useMemo } from 'react'
 import Connector from './Connector'
 import { ConnectorsStyled } from './Connectors.styled'
 import { ITask } from '../../types'
-import { useTasksStore } from '../../Store'
 
 type ConnectorsProps = {
   tasks: ITask[]
@@ -19,9 +18,6 @@ interface IConnector {
 }
 
 const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
-  const visibleTasks = useTasksStore((state) => state.visibleTasks)
-  const version = useTasksStore((state) => state.version)
-
   const connectors = useMemo(() => {
     if (!tasks?.length) return []
 
@@ -44,7 +40,7 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
             flatStart: task.type === 2 || !!task.subTaskIds?.length,
             flatEnd: successorTask?.type === 2 || !!successorTask?.subTaskIds?.length,
             successor,
-            key: `${task.id}-${successor}-${visibleTasks?.length}-v${version}`,
+            key: `${task.id}-${successor}`,
           }
         }) ?? []
 
@@ -66,7 +62,7 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
                 flatEnd: true,
                 hiddenItems: amountOfHiddenSuccessors,
                 successor: 'hidden',
-                key: `${task.id}-hidden-${visibleTasks?.length}-v${version}`,
+                key: `${task.id}-hidden`,
               },
             ]
           : []),
@@ -78,13 +74,13 @@ const Connectors: React.FC<ConnectorsProps> = ({ tasks }) => {
                 flatEnd: true,
                 hiddenItems: amountOfHiddenPredecessors,
                 successor: task.id,
-                key: `hidden-${task.id}-${visibleTasks?.length}-v${version}`,
+                key: `hidden-${task.id}`,
               },
             ]
           : []),
       ]
     })
-  }, [tasks, visibleTasks])
+  }, [tasks])
 
   const renderConnector = (connector: IConnector) => {
     return (
