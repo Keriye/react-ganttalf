@@ -1,7 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from 'react'
-
-import { flushSync } from 'react-dom'
 
 type UseResizeObserverArgs = {
   taskElement: React.MutableRefObject<HTMLElement | null>
@@ -15,7 +12,6 @@ export default function useResizeObserver({
   rowHeight,
   startElement,
   isFlat,
-  startId,
 }: UseResizeObserverArgs): { x: number; y: number } | null {
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null)
   const containerRef = useRef<HTMLElement | null>(document.getElementById('react-ganttalf-tasks-container'))
@@ -54,49 +50,24 @@ export default function useResizeObserver({
 
   const setStateCoords = useCallback(
     (el: HTMLElement) => {
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.timeLog('getCoords', 3)
-      }
       const positions = getCoords(el)
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.timeLog('getCoords', 4)
-      }
+
       const _coords = {
         x: startElement ? positions.right : positions.left,
         y: isFlat ? positions.top : positions.top + 0.08 * rowHeight * (startElement ? 1 : -1),
       }
 
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.timeLog('getCoords', 5)
-      }
-
-      queueMicrotask(() => {
-        setCoords(_coords)
-      })
-      // flushSync(() => {
-      //   setCoords(_coords)
-      // })
+      setCoords(_coords)
     },
-    [getCoords, startElement],
+    [getCoords, isFlat, rowHeight, startElement],
   )
 
   const observer = useRef(
     new MutationObserver((entries) => {
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.time('getCoords')
-      }
-
       // Only care about the first element, we expect one element ot be watched
       const contentRect = entries[0]
 
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.timeLog('getCoords', 1)
-      }
-
       setStateCoords(contentRect.target as HTMLElement)
-      if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-        console.timeLog('getCoords', 2)
-      }
     }),
   )
 
@@ -107,22 +78,25 @@ export default function useResizeObserver({
   }, [coords, setStateCoords, taskElement])
 
   useEffect(() => {
-    if (taskElement.current) {
+    const currentTaskElement = taskElement.current
+    const currentObserver = observer.current
+
+    if (currentTaskElement) {
       const config = {
         attributes: true,
         childList: false,
         subtree: false,
       }
 
-      observer.current.observe(taskElement.current, config)
+      currentObserver.observe(currentTaskElement, config)
     }
 
     return () => {
-      if (taskElement.current) {
-        observer.current?.disconnect()
+      if (currentTaskElement) {
+        currentObserver?.disconnect()
       }
     }
-  }, [])
+  }, [taskElement])
 
   if (taskElement.current && !coords) {
     const positions = getCoords(taskElement.current)

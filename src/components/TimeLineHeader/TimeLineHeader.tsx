@@ -1,9 +1,9 @@
 import * as SC from './TimeLineHeader.styled'
 
 import { DateTime } from 'luxon'
+import { getDatesBetween } from '../../utils/helpers'
 import { useConfigStore } from '../../Store'
 import useDomStore from '../../Store/DomStore'
-import { getDatesBetween } from '../../utils/helpers'
 
 enum Period {
   Months = 'months',

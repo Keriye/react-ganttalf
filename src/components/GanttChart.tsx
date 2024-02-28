@@ -265,7 +265,7 @@ function GanttChart({
 
   useEffect(() => {
     const startDay = new Date(config.startDate).getDay()
-    const weeks = Math.round(350 / ((config?.columnWidth ?? 10) * 7) + 0.5)
+    const weeks = Math.round(600 / ((config?.columnWidth ?? 10) * 7) + 0.5)
     const daysDelta = Math.floor(weeks * 7) + startDay - 1
 
     setConfig({

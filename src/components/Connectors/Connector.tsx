@@ -31,7 +31,6 @@ export default function Connector({ startId, endId, hiddenItems, mousePosition, 
   const coordsStart = useResizeObserver({
     taskElement: element1,
     rowHeight,
-    startId,
     startElement: true,
     isFlat: flatStart,
   })
@@ -70,10 +69,6 @@ export default function Connector({ startId, endId, hiddenItems, mousePosition, 
 
   if (!isCommon && !coordsStart && !coordsEnd) {
     return null
-  }
-
-  if (startId === '77a49494-d8e5-4088-ad51-4a2353c87b10') {
-    console.timeEnd('getCoords')
   }
 
   const startPoint = (coordsStart || { ...coordsEnd, x: coordsEnd!.x - 40 }) as { x: number; y: number }

@@ -74,6 +74,29 @@ function Row({ task, indexKey }: IRowProps) {
     }
   }, [columnWidth, daysFromStart.length, taskDays.length])
 
+  // const scrollContainerIfNeeded = useCallback(() => {
+  //   if (!taskRef.current) return
+
+  //   const scrollContainer = document.getElementById('react-ganttalf')
+  //   if (!scrollContainer) return
+
+  //   const taskRect = taskRef.current.getBoundingClientRect()
+  //   const containerRect = scrollContainer.getBoundingClientRect()
+
+  //   // Toleranzbereich am Rand des Containers definieren, z.B. 50px
+  //   const tolerance = 50
+  //   const scrollAmount = 10 // Menge des Scrollens pro Schritt
+
+  //   // Rechts scrollen, wenn das Task-Element den rechten Rand erreicht
+  //   if (containerRect.right - taskRect.right < tolerance) {
+  //     scrollContainer.scrollBy({ left: scrollAmount })
+  //   }
+  //   // Links scrollen, wenn das Task-Element den linken Rand erreicht
+  //   else if (taskRect.left - containerRect.left < tolerance) {
+  //     scrollContainer.scrollBy({ left: -scrollAmount })
+  //   }
+  // }, [taskRef])
+
   // handle task move
   useEffect(() => {
     const leftPosition = daysFromStart.length * columnWidth
@@ -84,6 +107,8 @@ function Row({ task, indexKey }: IRowProps) {
 
       // snap to grid
       newLeftPosition = Math.round(newLeftPosition / columnWidth) * columnWidth
+
+      // scrollContainerIfNeeded()
 
       const changedDateSteps = (newLeftPosition - leftPosition) / columnWidth
 
@@ -242,6 +267,7 @@ function Row({ task, indexKey }: IRowProps) {
   }, [])
 
   const handleStartTaskMove = useCallback((event: React.MouseEvent) => {
+    console.log(1)
     event.preventDefault()
     event.stopPropagation()
 
