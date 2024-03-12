@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type UseResizeObserverArgs = {
   taskElement: React.MutableRefObject<HTMLElement | null>
@@ -23,7 +23,9 @@ export default function useResizeObserver({
       const box = el.getBoundingClientRect()
       const containerBox = container?.getBoundingClientRect()
 
-      if (!containerBox) return { top: 0, right: 0, bottom: 0, left: 0 }
+      if (!containerBox) {
+        return { top: 0, right: 0, bottom: 0, left: 0 }
+      }
 
       return {
         top:
@@ -71,6 +73,10 @@ export default function useResizeObserver({
     }),
   )
 
+  useLayoutEffect(() => {
+    containerRef.current = document.getElementById('react-ganttalf-tasks-container')
+  }, [])
+
   useEffect(() => {
     if (!coords && taskElement.current) {
       setStateCoords(taskElement.current)
@@ -92,9 +98,9 @@ export default function useResizeObserver({
     }
 
     return () => {
-      if (currentTaskElement) {
-        currentObserver?.disconnect()
-      }
+      // if (currentTaskElement) {
+      currentObserver?.disconnect()
+      // }
     }
   }, [taskElement])
 

@@ -152,6 +152,7 @@ function GanttChart({
   onSubtaskCreate,
   onSubtaskMove,
   onSubtaskPromote,
+  scrollContainerRef,
   onTaskAppend,
   onTaskCreate,
   onTaskDelete,

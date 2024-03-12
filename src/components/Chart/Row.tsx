@@ -84,16 +84,18 @@ function Row({ task, indexKey }: IRowProps) {
   //   const containerRect = scrollContainer.getBoundingClientRect()
 
   //   // Toleranzbereich am Rand des Containers definieren, z.B. 50px
-  //   const tolerance = 50
+  //   const tolerance = 60
   //   const scrollAmount = 10 // Menge des Scrollens pro Schritt
 
   //   // Rechts scrollen, wenn das Task-Element den rechten Rand erreicht
-  //   if (containerRect.right - taskRect.right < tolerance) {
-  //     scrollContainer.scrollBy({ left: scrollAmount })
+  //   if (containerRect.right - (taskRect.right + 30) < tolerance) {
+  //     scrollContainer.scrollLeft += scrollAmount
+  //     return scrollAmount
   //   }
   //   // Links scrollen, wenn das Task-Element den linken Rand erreicht
-  //   else if (taskRect.left - containerRect.left < tolerance) {
-  //     scrollContainer.scrollBy({ left: -scrollAmount })
+  //   else if (taskRect.left - (containerRect.left + 30) < tolerance) {
+  //     scrollContainer.scrollLeft -= scrollAmount
+  //     return -scrollAmount
   //   }
   // }, [taskRef])
 
@@ -108,7 +110,7 @@ function Row({ task, indexKey }: IRowProps) {
       // snap to grid
       newLeftPosition = Math.round(newLeftPosition / columnWidth) * columnWidth
 
-      // scrollContainerIfNeeded()
+      // const scrollAmout = scrollContainerIfNeeded()
 
       const changedDateSteps = (newLeftPosition - leftPosition) / columnWidth
 
