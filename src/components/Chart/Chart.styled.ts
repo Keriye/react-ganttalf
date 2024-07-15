@@ -112,6 +112,7 @@ export const Task = styled(TaskPosition)<{
   columnWidth: number
   isParentTask: boolean
   daysLength: number
+  disabled: boolean
 }>`
   z-index: 110;
   display: flex;
@@ -194,7 +195,8 @@ export const Task = styled(TaskPosition)<{
 
   .c-chart-bar-task {
     transition: height 0.05s;
-    cursor: ${({ isParentTask }) => {
+    cursor: ${({ isParentTask, disabled }) => {
+      if (disabled) return 'pointer'
       if (isParentTask) return 'ew-resize'
 
       return 'pointer'
@@ -256,6 +258,7 @@ export const MileStone = styled(TaskPosition)<{
   rowHeight: number
   columnWidth: number
   isParentTask: boolean
+  disabled: boolean
 }>`
   display: flex;
   /* transition: left 0.1s, width 0.1s; */
@@ -342,7 +345,8 @@ export const MileStone = styled(TaskPosition)<{
 
   .c-chart-bar-task {
     transition: height 0.05s;
-    cursor: ${({ isParentTask }) => {
+    cursor: ${({ isParentTask, disabled }) => {
+      if (disabled) return 'pointer'
       if (isParentTask) return 'ew-resize'
 
       return 'pointer'

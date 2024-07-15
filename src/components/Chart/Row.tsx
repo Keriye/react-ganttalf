@@ -2,7 +2,7 @@ import * as SC from './Chart.styled'
 
 import React, { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { addDateTime, areDatesEqual, getDatesBetween } from '../../utils/helpers'
-import { useConfigStore, useTasksStore } from '../../Store'
+import { useConfigStore, usePermissionsStore, useTasksStore } from '../../Store'
 
 import { ActionContext } from '../GanttChart'
 import { ITask } from '../../types'
@@ -43,6 +43,8 @@ function Row({ task, indexKey }: IRowProps) {
   const [isTaskResizing, setIsTaskResizing] = useState(false)
 
   const [displayTimeLineDateRange, setDisplayTimeLineDateRange] = useState(false)
+
+  const { canCreateLink, canUpdateTaskDates } = usePermissionsStore((state) => state.permissions)
 
   const isParentTask = task.subTaskIds?.length ? task.subTaskIds.length > 0 : false
 
@@ -268,16 +270,18 @@ function Row({ task, indexKey }: IRowProps) {
     setIsTaskResizing(true)
   }, [])
 
-  const handleStartTaskMove = useCallback((event: React.MouseEvent) => {
-    console.log(1)
-    event.preventDefault()
-    event.stopPropagation()
+  const handleStartTaskMove = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
 
-    if (!taskRef.current) return
+      if (!taskRef.current || !canUpdateTaskDates) return
 
-    initPositionRef.current = { pageX: event.pageX }
-    setIsTaskMoving(true)
-  }, [])
+      initPositionRef.current = { pageX: event.pageX }
+      setIsTaskMoving(true)
+    },
+    [canUpdateTaskDates],
+  )
 
   function renderDraggableIndicator(endpoint: 'start' | 'end') {
     if (isTaskResizing) return null
@@ -347,18 +351,19 @@ function Row({ task, indexKey }: IRowProps) {
         <SC.MileStone
           isParentTask={isParentTask}
           ref={taskRef}
+          disabled={!canUpdateTaskDates}
           data-index={indexKey}
           id={'task-bar-' + task.id}
           daysFromStart={daysFromStart.length}
           columnWidth={columnWidth}
           rowHeight={rowHeight}
         >
-          {renderLinkPoint('start')}
+          {canCreateLink && renderLinkPoint('start')}
           <div
             onMouseDown={handleStartTaskMove}
             className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}
           ></div>
-          {renderLinkPoint('end')}
+          {canCreateLink && renderLinkPoint('end')}
         </SC.MileStone>
       )
     }
@@ -367,6 +372,7 @@ function Row({ task, indexKey }: IRowProps) {
       <SC.Task
         title={task.title}
         isParentTask={isParentTask}
+        disabled={!canUpdateTaskDates}
         ref={taskRef}
         data-index={indexKey}
         id={'task-bar-' + task.id}
@@ -375,10 +381,10 @@ function Row({ task, indexKey }: IRowProps) {
         columnWidth={columnWidth}
         rowHeight={rowHeight}
       >
-        {renderLinkPoint('start')}
+        {canCreateLink && renderLinkPoint('start')}
         {renderConnectorPoint('start')}
         <div onMouseDown={handleStartTaskMove} className={`c-chart-bar-task ${task.status === 1 ? 'completed' : ''}`}>
-          {!isParentTask && (
+          {!isParentTask && canUpdateTaskDates && (
             <>
               {renderDraggableIndicator('start')}
               {renderDraggableIndicator('end')}
@@ -386,7 +392,7 @@ function Row({ task, indexKey }: IRowProps) {
           )}
         </div>
         {renderConnectorPoint('end')}
-        {renderLinkPoint('end')}
+        {canCreateLink && renderLinkPoint('end')}
       </SC.Task>
     )
   }

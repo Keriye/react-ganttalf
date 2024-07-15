@@ -20,11 +20,11 @@ const config = {
 }
 
 const translations = {
-  'default.task.title': 'Невідоме завдання',
-  'add.task.label': 'Додати завдання',
+  'default.task.title': 'Unbekannte Aufgabe',
+  'add.task.label': 'Aufgabe hinzufügen',
   'add.task.placeholder': 'Name',
-  'menu.scroll.to.task': 'Перейдіть до завдання',
-  'menu.open.details': 'Bідкрити деталі',
+  'menu.scroll.to.task': 'Zur Aufgabe scrollen',
+  'menu.open.details': 'Details öffnen',
   'menu.delete.task': 'Aufgabe löschen',
   'menu.status.complete': 'Aufgabe abschließen',
   'menu.status.reactivate': 'Aufgabe erneut aktivieren',
@@ -81,6 +81,11 @@ Default.args = {
   config,
   tasks,
   label: 'Button',
+  permissions: {
+    canCreateTask: false,
+    canCreateLink: false,
+    canUpdateTaskDates: false,
+  },
   translations,
   onTaskSelect: (task) => console.info('💥💥💥task selected 💥💥💥 ', task),
   onLoadSubTasks: (task) => {

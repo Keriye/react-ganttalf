@@ -1,5 +1,5 @@
-import { IConfig, ITask, ITheme } from '../types'
-import { useConfigStore, useTasksStore } from '../Store'
+import { IConfig, ITask, ITheme, IGanttChartPermissions } from '../types'
+import { useConfigStore, useTasksStore, usePermissionsStore } from '../Store'
 
 import AddTaskButton from './Grid/AddTaskButton'
 import Chart from './Chart/Chart'
@@ -72,6 +72,7 @@ export type GanttChartProps = {
   virtualization?: undefined
   inProgress?: boolean
   customGrid?: React.ReactNode
+  permissions?: IGanttChartPermissions
 }
 
 const startDate = DateTime.local().minus({ days: 15 }).toJSDate()
@@ -152,7 +153,6 @@ function GanttChart({
   onSubtaskCreate,
   onSubtaskMove,
   onSubtaskPromote,
-  scrollContainerRef,
   onTaskAppend,
   onTaskCreate,
   onTaskDelete,
@@ -166,6 +166,7 @@ function GanttChart({
   translations,
   virtualization,
   customGrid,
+  permissions,
 }: GanttChartProps) {
   const storeConfig = useConfigStore((state) => state.config)
 
@@ -174,6 +175,7 @@ function GanttChart({
   const setVisibleTasks = useTasksStore((state) => state.setVisibleTasks)
   const scrollToTask = useTasksStore((state) => state.scrollToTask)
   const setConfig = useConfigStore((state) => state.setConfig)
+  const setPermissions = usePermissionsStore((state) => state.setPermissions)
   const setTranslations = useTranslateStore((state) => state.setTranslations)
   const setVirtualData = useVirtualizationStore((store) => store.setVirtualData)
   const [wrapperNode, setWrapperNode] = useDomStore((state) => [state.wrapperNode, state.setWrapperNode])
@@ -201,6 +203,12 @@ function GanttChart({
   useEffect(() => {
     setVisibleTasks(visibleTasks)
   }, [setVisibleTasks, visibleTasks])
+
+  useEffect(() => {
+    if (permissions) {
+      setPermissions(permissions)
+    }
+  }, [permissions, setPermissions])
 
   const scrollToFn: VirtualizerOptions<HTMLDivElement, Element>['scrollToFn'] = useCallback(
     (offset, canSmooth, instance) => {

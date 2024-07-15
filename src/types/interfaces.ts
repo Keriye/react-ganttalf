@@ -41,6 +41,12 @@ export interface IConfig {
   zoom?: number
 }
 
+export type IGanttChartPermissions = {
+  canCreateTask: boolean
+  canCreateLink: boolean
+  canUpdateTaskDates: boolean
+}
+
 export interface ITheme {
   themePrimary?: string
   themeLighterAlt?: string
